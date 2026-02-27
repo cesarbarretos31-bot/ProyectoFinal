@@ -7,19 +7,12 @@ use CodeIgniter\Controller;
 class Prueba extends Controller
 {
     public function insertar()
-    {
+{
+    try {
         $db = \Config\Database::connect();
-
-        $data = [
-            'nombre' => 'Cesar Test'
-        ];
-
-        $db->table('prueba')->insert($data);
-
-        if ($db->affectedRows() > 0) {
-            echo "✅ Insertado correctamente";
-        } else {
-            echo "❌ Error al insertar";
-        }
+        echo "✅ Conectado correctamente";
+    } catch (\Throwable $e) {
+        echo "❌ Error: " . $e->getMessage();
     }
+}
 }
