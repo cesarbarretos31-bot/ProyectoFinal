@@ -7,3 +7,4 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('testdb', 'TestDB::index');
+$routes->get('insertar-prueba', 'Prueba::insertar');
