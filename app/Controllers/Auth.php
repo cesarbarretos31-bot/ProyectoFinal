@@ -21,7 +21,7 @@ class Auth extends BaseController
         
         // 1. Validar reCaptcha de Google
         $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
-        $secretKey = "6LfVYoYsAAAAALT4wql4uAmX68Gs2pASFoZHImE5"; // <--- PON TU SECRET KEY AQUÍ
+        $secretKey = "6LfVYoYsAAAAAADY2KewgAJEOUS82JdL_6eaVz40"; // <--- PON TU SECRET KEY AQUÍ
         
         $client = \Config\Services::curlrequest();
         $resCaptcha = $client->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [

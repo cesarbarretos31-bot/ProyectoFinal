@@ -35,7 +35,7 @@
                         <input type="password" id="password" class="form-control" placeholder="••••••••" required>
                     </div>
                     <div class="mb-4 d-flex justify-content-center">
-                        <div class="g-recaptcha" data-sitekey="6LfVYoYsAAAAAADY2KewgAJEOUS82JdL_6eaVz40"></div>
+                        <div class="g-recaptcha" data-sitekey="6LfVYoYsAAAAALT4wql4uAmX68Gs2pASFoZHImE5"></div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar Sesión</button>
                     <div id="responseMsg" class="alert alert-danger p-2 small text-center" style="display:none;"></div>
