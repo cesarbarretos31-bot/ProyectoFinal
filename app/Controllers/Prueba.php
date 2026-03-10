@@ -14,7 +14,7 @@ public function insertar()
 
         $data = [
     'id'     => 1, // Tendrías que generar un ID único tú mismo
-    'nombre' => 'Prueba Railway'
+    'nombre' => 'Prueba ya jala'
 ];
 
         $insert = $db->table('prueba')->insert($data);
