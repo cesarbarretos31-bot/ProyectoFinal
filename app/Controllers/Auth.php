@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\UsuarioModel;
 use CodeIgniter\API\ResponseTrait;
+use Firebase\JWT\JWT;
 
 class Auth extends BaseController
 {
@@ -16,43 +17,66 @@ class Auth extends BaseController
 
     public function login()
     {
-        $session = session();
         $model = new UsuarioModel();
+        
+        // 1. Validar reCaptcha de Google
+        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+        $secretKey = "6LfVYoYsAAAAALT4wql4uAmX68Gs2pASFoZHImE5"; // <--- PON TU SECRET KEY AQUÍ
+        
+        $client = \Config\Services::curlrequest();
+        $resCaptcha = $client->request('POST', 'https://www.google.com/recaptcha/api/siteverify', [
+            'form_params' => [
+                'secret'   => $secretKey,
+                'response' => $recaptchaResponse
+            ]
+        ]);
 
+        $captchaResult = json_decode($resCaptcha->getBody());
+        if (!$captchaResult->success) {
+            return $this->fail(['error' => 'Por favor, completa el captcha correctamente.'], 401);
+        }
+
+        // 2. Validar Usuario
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
-
         $user = $model->obtenerUsuario($username);
 
         if ($user) {
-            // Validar estado
             if ($user['idEstado'] != 1) {
-                return $this->fail('El usuario no existe o está inactivo.', 401);
+                return $this->fail(['error' => 'El usuario está inactivo o no existe.'], 401);
             }
 
-            // Validar password
             if (password_verify($password, $user['strPwd'])) {
                 
-                $ses_data = [
-                    'id'         => $user['id'],
-                    'usuario'    => $user['strNombreUsuario'],
-                    'idPerfil'   => $user['idPerfil'],
-                    'isLoggedIn' => true
+                // 3. Generar JWT
+                $key = "TU_LLAVE_SECRETA_JWT"; // Inventa una palabra larga y segura
+                $iat = time();
+                $exp = $iat + 3600; // Expira en 1 hora
+
+                $payload = [
+                    "iss" => "Issuer del Proyecto",
+                    "aud" => "Audience del Proyecto",
+                    "iat" => $iat,
+                    "exp" => $exp,
+                    "uid" => $user['id'],
+                    "perfil" => $user['idPerfil']
                 ];
-                
-                $session->set($ses_data);
+
+                $token = JWT::encode($payload, $key, 'HS256');
 
                 return $this->respond([
                     'status' => 200,
-                    'msg'    => 'Login exitoso',
-                    'user'   => $user['strNombreUsuario']
+                    'msg'    => 'Bienvenido al sistema',
+                    'token'  => $token,
+                    'user'   => [
+                        'nombre' => $user['strNombreUsuario'],
+                        'foto'   => $user['strImagen'] ? base_url('uploads/'.$user['strImagen']) : base_url('assets/default-user.png')
+                    ]
                 ], 200);
 
-            } else {
-                return $this->fail('Contraseña incorrecta.', 401);
             }
-        } else {
-            return $this->fail('El usuario no existe.', 401);
         }
+        
+        return $this->fail(['error' => 'Usuario o contraseña incorrectos.'], 401);
     }
 }
