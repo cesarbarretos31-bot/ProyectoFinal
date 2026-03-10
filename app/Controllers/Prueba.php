@@ -6,29 +6,20 @@ use CodeIgniter\Controller;
 
 class Prueba extends Controller
 {
-   
 public function insertar()
 {
     try {
         $db = \Config\Database::connect();
+        $data = ['nombre' => 'Prueba desde Cero'];
 
-        $data = [
-    'id'     => 1, // Tendrías que generar un ID único tú mismo
-    'nombre' => 'Prueba ya jala'
-];
-
-        $insert = $db->table('prueba')->insert($data);
-
-        if ($insert) {
-            echo "✅ Insertado correctamente";
+        if ($db->table('prueba')->insert($data)) {
+            echo "✅ ¡ÉXITO! Datos insertados correctamente.";
         } else {
-            echo "❌ No se insertó";
+            echo "❌ Error en el insert: ";
             print_r($db->error());
         }
-
     } catch (\Throwable $e) {
-        echo "❌ Error: " . $e->getMessage();
+        echo "❌ Error de conexión o ejecución: " . $e->getMessage();
     }
 }
-
 }

@@ -25,23 +25,20 @@ class Database extends Config
         'compress' => false,
         'strictOn' => false,
         'failover' => [],
-        'port'     => 3306, // <--- Aquí solo pon el número fijo, sin funciones ni (int)
+        'port'     => 3306,
     ];
 
     public function __construct()
     {
         parent::__construct();
 
-        // 🔥 Configuración para Railway
-        // Solo sobrescribimos si existen las variables de entorno de Railway
+        // Si Railway inyectó la variable, la usamos
         if (getenv('MYSQLHOST')) {
             $this->default['hostname'] = getenv('MYSQLHOST');
             $this->default['username'] = getenv('MYSQLUSER');
             $this->default['password'] = getenv('MYSQLPASSWORD');
             $this->default['database'] = getenv('MYSQLDATABASE');
-            
-            // ¡AQUÍ ES DONDE DEBES HACER LA CONVERSIÓN A ENTERO!
-            $this->default['port'] = (int) (getenv('MYSQLPORT') ?: 3306);
+            $this->default['port']     = (int) (getenv('MYSQLPORT') ?: 3306);
         }
     }
 }
