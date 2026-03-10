@@ -9,3 +9,6 @@ $routes->get('/', 'Home::index');
 $routes->get('testdb', 'TestDB::index');
 $routes->get('insertar-prueba', 'Prueba::insertar');
 $routes->get('instalador', 'Instalador::index');
+$routes->get('/', 'Auth::index');
+$routes->get('login', 'Auth::index');
+$routes->post('auth/login', 'Auth::login');
