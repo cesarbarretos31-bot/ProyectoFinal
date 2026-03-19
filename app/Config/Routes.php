@@ -1,5 +1,5 @@
 <?php
-
+namespace App\Filters;
 use CodeIgniter\Router\RouteCollection;
 
 /**
