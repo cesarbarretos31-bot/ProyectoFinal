@@ -11,7 +11,7 @@ class TestDB extends Controller
         try {
             // Conectar a la base de datos
             $db = \Config\Database::connect();
-            echo "✅ Conectado correctamente a la base de datos<br>";
+            echo "✅ Conectado correctamente  y bisbvcvc a la base de datos<br>";
 
         } catch (\Throwable $e) {
             echo "❌ Error: " . $e->getMessage();
