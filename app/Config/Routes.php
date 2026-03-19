@@ -13,3 +13,4 @@ $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->get('/', 'Auth::index');
 $routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
+$routes->post('auth/login', 'Auth::login');
