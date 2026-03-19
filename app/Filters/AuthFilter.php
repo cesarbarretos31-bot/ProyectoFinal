@@ -1,6 +1,9 @@
 <?php
+namespace App\Filters;
+
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+
 
 class AuthFilter {
     protected $key = "TU_LLAVE_SECRETA_SUPER_SEGURA";

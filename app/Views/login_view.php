@@ -79,8 +79,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     formData.append('g-recaptcha-response', captcha);
 
     try {
-        // Usamos base_url o ruta relativa asegurada
-        const response = await fetch('<?= base_url("auth/login") ?>', {
+        // CAMBIO CLAVE: Ruta relativa pura. 
+        // Si estás en https://tu-app.railway.app/login, esto irá a https://tu-app.railway.app/auth/login
+        const response = await fetch('/auth/login', {
             method: 'POST',
             body: formData,
             headers: {
@@ -91,11 +92,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const res = await response.json();
 
         if (response.ok) {
-            // Guardar JWT y datos de usuario
             localStorage.setItem('token', res.token);
             localStorage.setItem('user', JSON.stringify(res.user));
-            // Redirigir
-            window.location.href = '<?= base_url("dashboard") ?>';
+            // Redirección relativa también
+            window.location.href = '/dashboard';
         } else {
             msg.innerText = res.messages?.error || res.error || "Credenciales incorrectas";
             msg.style.display = 'block';
@@ -104,13 +104,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             btn.innerText = "Iniciar Sesión";
         }
     } catch (err) {
-        console.error(err);
-        msg.innerText = "Error crítico de conexión con el servidor.";
+        console.error("Error capturado:", err);
+        msg.innerText = "Error de conexión. Revisa que el servidor esté activo.";
         msg.style.display = 'block';
         btn.disabled = false;
         btn.innerText = "Iniciar Sesión";
     }
 });
 </script>
-</body>
-</html>
