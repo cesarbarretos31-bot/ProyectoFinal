@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction && composer dump-autoload
 
 RUN chmod -R 777 writable
 
