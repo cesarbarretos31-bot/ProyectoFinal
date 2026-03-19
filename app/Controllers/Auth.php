@@ -24,7 +24,7 @@ class Auth extends BaseController
     try {
         // ... (Tu lógica de usuario y captcha)
         
-        $key = "CLAVE_SECRETA_TEST";
+        $key = "ESTA_ES_UNA_LLAVE_SUPER_SECRETA_Y_LARGA_1234567890";
         $payload = ['uid' => 1];
         $token = \Firebase\JWT\JWT::encode($payload, $key, 'HS256');
 
