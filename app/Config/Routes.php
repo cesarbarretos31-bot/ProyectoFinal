@@ -11,4 +11,5 @@ $routes->get('insertar-prueba', 'Prueba::insertar');
 $routes->get('instalador', 'Instalador::index');
 $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
-$routes->post('auth/login', 'Auth::login');
+$routes->get('/', 'Auth::index');
+$routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
