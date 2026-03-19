@@ -49,7 +49,7 @@ class Auth extends BaseController
             if (password_verify($password, $user['strPwd'])) {
                 
                 // 3. Generar JWT
-                $key = "TU_LLAVE_SECRETA_JWT"; // Inventa una palabra larga y segura
+                $key = "nosenadotaaaa"; // Inventa una palabra larga y segura
                 $iat = time();
                 $exp = $iat + 3600; // Expira en 1 hora
 
