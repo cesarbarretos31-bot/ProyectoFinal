@@ -37,7 +37,7 @@ class Auth extends BaseController
     if (password_verify($password, $user['strPwd'])) {
         
         // Generar JWT
-      //  $key = "TU_LLAVE_SECRETA_JWT";
+       $key = "TU_LLAVE_SECRETA_JWT";
         $iat = time();
         $payload = [
             "iat" => $iat,
@@ -46,11 +46,11 @@ class Auth extends BaseController
             "perfil" => $user['idPerfil']
         ];
 
-       // $token = JWT::encode($payload, $key, 'HS256');
+        $token = JWT::encode($payload, $key, 'HS256');
 
         return $this->respond([
             'status' => 200,
-          //  'token'  => $token,
+           'token'  => $token,
             'user'   => [
                 'nombre' => $user['strNombreUsuario'],
                 'foto'   => $user['strImagen'] ? base_url('uploads/'.$user['strImagen']) : ''
