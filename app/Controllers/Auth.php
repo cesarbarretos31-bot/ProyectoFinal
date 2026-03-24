@@ -2,9 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\UsuarioModel;
 use CodeIgniter\API\ResponseTrait;
-use Firebase\JWT\JWT;
 
 class Auth extends BaseController
 {
@@ -12,7 +10,7 @@ class Auth extends BaseController
 
     public function index()
     {
-        // Si ya tiene sesión, mandarlo directo al dashboard
+        // Si ya hay sesión, directo al dashboard
         if (session()->get('isLoggedIn')) {
             return redirect()->to(base_url('dashboard'));
         }
@@ -25,58 +23,44 @@ class Auth extends BaseController
         $db = \Config\Database::connect();
 
         // 1. Recibir datos del formulario (POST)
-        $usuario  = $this->request->getPost('usuario');
-        $password = $this->request->getPost('password');
+        $postUsuario  = $this->request->getPost('usuario'); 
+        $postPassword = $this->request->getPost('password');
 
-        // 2. Buscar al usuario en la base de datos con su Perfil
-        // Usamos tus nombres de tablas: Usuarios y Perfiles
-        $sql = "SELECT u.*, p.strNombrePerfil, p.bitAdministrador 
-                FROM Usuarios u 
-                JOIN Perfiles p ON u.idPerfil = p.id 
-                WHERE u.strNombreUsuario = ? LIMIT 1";
-        
-        $query = $db->query($sql, [$usuario]);
+        // 2. QUERY CON TUS NOMBRES EXACTOS
+        // Tabla: Usuario | Columna: srtNombreUsuario
+        $sql = "SELECT * FROM Usuario WHERE srtNombreUsuario = ? LIMIT 1";
+        $query = $db->query($sql, [$postUsuario]);
         $user = $query->getRow();
 
-        // 3. Validaciones de seguridad
+        // 3. VALIDACIÓN DE EXISTENCIA
         if (!$user) {
-            return $this->respond(['msg' => 'Usuario no encontrado'], 401);
+            return $this->respond(['msg' => 'El usuario no existe'], 401);
         }
 
-        if ($user->idEstado == 0) { // Punto 21 del PDF: Usuario Inactivo
-            return $this->respond(['msg' => 'Usuario inactivo. Contacte al admin.'], 403);
+        // 4. VALIDACIÓN DE ESTADO (Punto 21 del PDF)
+        if ($user->idEstado == 0) {
+            return $this->respond(['msg' => 'Usuario inactivo. Contacte al administrador.'], 403);
         }
 
-        // 4. Verificar Password (asumiendo que usas password_hash)
-        if (!password_verify($password, $user->strPwd)) {
-            // Nota: Si en tu BD la clave es texto plano (solo para pruebas), usa: if($password != $user->strPwd)
+        // 5. VALIDACIÓN DE CONTRASEÑA (Columna: srtPwd)
+        // Usamos comparación directa (password_verify es solo si están hasheadas)
+        if ($user->srtPwd !== $postPassword) {
             return $this->respond(['msg' => 'Contraseña incorrecta'], 401);
         }
 
-        // 5. Generar JWT (Opcional si usas Session, pero el PDF lo pide)
-        $key = "ESTA_ES_UNA_LLAVE_SUPER_SECRETA_12345";
-        $payload = [
-            'uid' => $user->id,
-            'iat' => time(),
-            'exp' => time() + 3600
-        ];
-        $token = JWT::encode($payload, $key, 'HS256');
-
-        // 6. CREAR LA SESIÓN EN EL SERVIDOR (Esto es lo que pediste)
+        // 6. CREAR SESIÓN CON TUS COLUMNAS
         $ses_data = [
             'idUsuario'    => $user->id,
-            'nombre'       => $user->strNombreUsuario,
+            'nombre'       => $user->srtNombreUsuario,
             'idPerfil'     => $user->idPerfil,
-            'foto'         => base_url('uploads/' . $user->strImagen),
-            'isAdmin'      => $user->bitAdministrador,
-            'isLoggedIn'   => true,
-            'token'        => $token // Guardamos el token en la sesión también
+            'foto'         => base_url('uploads/' . ($user->srtImagen ?? 'default.png')),
+            'isLoggedIn'   => true
         ];
         $session->set($ses_data);
 
         return $this->respond([
             'status' => 200,
-            'msg'    => 'Login exitoso',
+            'msg'    => '¡Bienvenido!',
             'redirect' => base_url('dashboard')
         ]);
     }
