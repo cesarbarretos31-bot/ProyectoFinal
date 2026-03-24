@@ -1,3 +1,11 @@
+<?php 
+    $session = session(); 
+    // Si por alguna razón llega aquí sin sesión (aunque el filtro debería pararlo), 
+    // estos valores serán nulos y el script no tronará.
+    $nombre   = $session->get('nombre') ?? 'Usuario';
+    $foto     = $session->get('foto')   ?? '';
+    $idPerfil = $session->get('idPerfil');
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,7 +20,7 @@
         #sidebar { min-width: 250px; max-width: 250px; background: #2c3e50; color: white; min-height: 100vh; transition: all 0.3s; }
         #sidebar .nav-link { color: rgba(255,255,255,0.7); border-radius: 5px; margin: 5px 10px; cursor: pointer; transition: 0.2s; }
         #sidebar .nav-link:hover, #sidebar .nav-link.active { background: #34495e; color: white; }
-        .nav-small-cap { color: #8e9aaf; font-size: 0.75rem; letter-spacing: 1px; font-weight: bold; }
+        .nav-small-cap { color: #8e9aaf; font-size: 0.75rem; letter-spacing: 1px; font-weight: bold; margin-top: 20px; }
         .main-content { width: 100%; }
         .top-navbar { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
         .user-img { object-fit: cover; border: 2px solid #3498db; }
@@ -31,10 +39,10 @@
             </ul>
 
         <hr class="mx-3 opacity-25">
-        <div class="px-3 pb-4">
-            <button onclick="logout()" class="btn btn-outline-danger btn-sm w-100">
+        <div class="px-3 pb-4 mt-auto">
+            <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm w-100">
                 <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </button>
+            </a>
         </div>
     </nav>
 
@@ -47,8 +55,8 @@
                     </ol>
                 </nav>
                 <div class="ms-auto d-flex align-items-center">
-                    <span id="userNameDisplay" class="me-3 fw-semibold text-dark"></span>
-                    <img id="userImgDisplay" src="" class="rounded-circle user-img" width="40" height="40" onerror="this.src='https://via.placeholder.com/40'">
+                    <span class="me-3 fw-semibold text-dark"><?= $nombre ?></span>
+                    <img src="<?= $foto ?>" class="rounded-circle user-img" width="40" height="40" onerror="this.src='https://via.placeholder.com/40'">
                 </div>
             </div>
         </nav>
@@ -57,7 +65,7 @@
             <div class="card p-5 text-center shadow-sm border-0">
                 <div class="card-body">
                     <i class="bi bi-speedometer2 text-primary mb-3" style="font-size: 3rem;"></i>
-                    <h2 class="fw-bold">¡Bienvenido al Sistema!</h2>
+                    <h2 class="fw-bold">¡Bienvenido, <?= explode(' ', $nombre)[0] ?>!</h2>
                     <p class="text-muted">Selecciona un módulo del menú lateral para gestionar la información.</p>
                 </div>
             </div>
@@ -66,97 +74,54 @@
 </div>
 
 <script>
-    // 1. VALIDACIÓN DE SESIÓN INMEDIATA
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    // Variables obtenidas directamente de PHP (Sesión del servidor)
+    const PERFIL_ID = "<?= $idPerfil ?>";
 
-    if (!token || !user) {
-        window.location.href = '<?= base_url("login") ?>';
-    }
-
-    // 2. MOSTRAR DATOS DEL USUARIO (Protección contra null)
-    if (user) {
-        document.getElementById('userNameDisplay').innerText = user.nombre || 'Usuario';
-        document.getElementById('userImgDisplay').src = user.foto || '';
-    }
-
-    // 3. INICIALIZAR CARGA DEL MENÚ
     document.addEventListener('DOMContentLoaded', () => {
-        renderizarMenuCompleto();
+        if (PERFIL_ID) {
+            renderizarMenuCompleto();
+        } else {
+            // Si no hay perfil en sesión, algo salió mal, redirigir al login
+            window.location.href = '<?= base_url("login") ?>';
+        }
     });
 
-    // 4. FUNCIÓN MAESTRA: RENDERIZAR MENÚ DESDE LA BD
     async function renderizarMenuCompleto() {
         const sidebar = document.getElementById('sidebar-dinamico');
 
         try {
-            // Fetch al controlador Menu.php con el idPerfil del usuario
-            const response = await fetch(`<?= base_url('menu/obtenerMenu') ?>?idPerfil=${user.idPerfil}`, {
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (!response.ok) throw new Error('Error al obtener el menú');
+            // Ya no enviamos token por header porque la sesión de PHP ya es válida en el servidor
+            const response = await fetch(`<?= base_url('menu/obtenerMenu') ?>?idPerfil=${PERFIL_ID}`);
+            
+            if (!response.ok) throw new Error('No se pudo cargar el menú');
             
             const datos = await response.json();
             sidebar.innerHTML = ''; 
 
-            // Nombres de los menús según el ID en la tabla 'Menu'
-            const nombresMenus = {
-                1: 'SEGURIDAD',
-                2: 'PRINCIPAL 1',
-                3: 'PRINCIPAL 2'
-            };
-
+            const nombresMenus = { 1: 'SEGURIDAD', 2: 'PRINCIPAL 1', 3: 'PRINCIPAL 2' };
             let currentMenuId = null;
 
             datos.forEach(p => {
-                // Si cambiamos de grupo (ej: de Seguridad a Principal 1), insertamos el encabezado
                 if (p.idMenu !== currentMenuId) {
                     currentMenuId = p.idMenu;
-                    sidebar.innerHTML += `
-                        <li class="nav-small-cap mt-4 mb-2 px-3 text-uppercase">
-                            ${nombresMenus[p.idMenu] || 'OTRO'}
-                        </li>`;
+                    sidebar.innerHTML += `<li class="nav-small-cap px-3 text-uppercase">${nombresMenus[p.idMenu] || 'MODULOS'}</li>`;
                 }
 
-                // Insertar el enlace del módulo (se convierte el nombre a minúsculas y se quitan espacios para la URL)
                 const urlModulo = p.strNombreModulo.replace(/\s+/g, '-').toLowerCase();
                 
                 sidebar.innerHTML += `
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" onclick="actualizarBreadcrumb('${p.strNombreModulo}')" href="<?= base_url() ?>${urlModulo}">
-                            <i class="bi bi-chevron-right me-2" style="font-size: 10px;"></i>
+                        <a class="nav-link d-flex align-items-center" href="<?= base_url() ?>${urlModulo}">
+                            <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>
                             <span>${p.strNombreModulo}</span>
                         </a>
                     </li>`;
             });
 
-            if (datos.length === 0) {
-                sidebar.innerHTML = '<li class="px-3 text-muted small">Sin módulos asignados</li>';
-            }
-
         } catch (error) {
-            console.error("Error crítico al cargar menú:", error);
-            sidebar.innerHTML = '<li class="px-3 text-danger small">Error de conexión</li>';
+            console.error("Error:", error);
+            sidebar.innerHTML = '<li class="px-3 text-danger small">Error al cargar módulos</li>';
         }
-    }
-
-    // 5. ACTUALIZAR BREADCRUMBS DINÁMICAMENTE
-    function actualizarBreadcrumb(modulo) {
-        const breadcrumb = document.getElementById('breadcrumbArea');
-        breadcrumb.innerHTML = `
-            <li class="breadcrumb-item"><a href="<?= base_url('dashboard') ?>">Inicio</a></li>
-            <li class="breadcrumb-item active text-capitalize">${modulo}</li>
-        `;
-    }
-
-    // 6. CERRAR SESIÓN
-    function logout() {
-        localStorage.clear();
-        window.location.href = '<?= base_url("login") ?>';
     }
 </script>
 </body>
