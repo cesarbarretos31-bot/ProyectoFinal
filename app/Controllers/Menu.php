@@ -1,27 +1,50 @@
 <?php
+
 namespace App\Controllers;
-use CodeIgniter\API\ResponseTrait;
 
-class Menu extends BaseController {
-    use ResponseTrait;
+use CodeIgniter\RESTful\ResourceController;
 
-    public function obtenerMenu() {
-        $idPerfil = $this->request->getVar('idPerfil');
+class Menu extends ResourceController
+{
+    protected $format = 'json';
+
+    public function obtenerMenu()
+    {
+        // 1. Recibimos el idPerfil desde el fetch del JS
+        $idPerfil = $this->request->getGet('idPerfil');
+        
+        if (!$idPerfil) {
+            return $this->fail('Falta el ID de Perfil', 400);
+        }
+
         $db = \Config\Database::connect();
 
-        // Consulta que trae: El nombre del menú padre (Seguridad, Principal 1, etc) y el módulo
-        // Cambia esto en tu query:
-// En tu controlador de Menu o donde hagas la consulta del sidebar:
-$sql = "SELECT 
-            m.idMenu, 
-            modu.strNombreModulo, 
-            p.bitConsulta 
-        FROM Menu m 
-        JOIN Modulo modu ON m.idModulo = modu.id 
-        JOIN PermisosPerfil p ON p.idModulo = modu.id -- <-- TABLA CON MAYÚSCULAS
-        WHERE p.idPerfil = ? AND p.bitConsulta = 1
-        ORDER BY m.idMenu ASC";
-        $query = $db->query($sql, [$idPerfil]);
-        return $this->respond($query->getResultArray());
+        // 2. QUERY MAESTRA: Traemos el grupo (idMenu) y el nombre del módulo
+        // IMPORTANTE: Los nombres de las tablas coinciden con tu base de datos (PascalCase)
+        $sql = "SELECT 
+                    m.idMenu, 
+                    modu.strNombreModulo,
+                    p.bitConsulta,
+                    p.bitAgregar,
+                    p.bitEditar,
+                    p.bitEliminar,
+                    p.bitDetalle
+                FROM Menu m
+                JOIN Modulo modu ON m.idModulo = modu.id
+                JOIN PermisosPerfil p ON p.idModulo = modu.id
+                WHERE p.idPerfil = ? 
+                  AND p.bitConsulta = 1
+                ORDER BY m.idMenu ASC, modu.id ASC";
+
+        try {
+            $query = $db->query($sql, [$idPerfil]);
+            $resultados = $query->getResultArray();
+
+            // 3. Retornamos los datos al JS
+            return $this->respond($resultados);
+            
+        } catch (\Exception $e) {
+            return $this->failServerError('Error en la base de datos: ' . $e->getMessage());
+        }
     }
 }
