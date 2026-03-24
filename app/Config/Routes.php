@@ -8,9 +8,10 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('testdb', 'TestDB::index');
 $routes->get('insertar-prueba', 'Prueba::insertar');
-$routes->get('instalador', 'Instalador::index');
+
 $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->get('/', 'Auth::index');
 $routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
 $routes->post('auth/login', 'Auth::login');
+$routes->get('instalador/ejecutar', 'Instalador::ejecutar');    
