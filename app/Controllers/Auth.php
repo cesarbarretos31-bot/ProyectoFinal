@@ -21,45 +21,39 @@ class Auth extends BaseController
         $session = session();
         $db = \Config\Database::connect();
 
-        // 1. CAPTURAR DATOS
+        // 1. Capturar datos del POST
         $postUsuario  = $this->request->getPost('usuario'); 
         $postPassword = $this->request->getPost('password');
 
-        // --- DIAGNÓSTICO 1: ¿Viene vacío? ---
-        if (empty($postUsuario) || empty($postPassword)) {
-            return $this->respond(['msg' => 'PHP no recibió nada. Revisa los nombres en el FormData.'], 401);
-        }
-
-        // 2. BUSCAR AL USUARIO
-        $sql = "SELECT * FROM Usuario WHERE srtNombreUsuario = ? LIMIT 1";
-        $query = $db->query($sql, [trim($postUsuario)]);
+        // 2. QUERY CON NOMBRES EXACTOS DE TU IMAGEN
+        // Tabla: Usuario
+        // Columna Nombre: strNombreUsuario
+        $sql = "SELECT * FROM Usuario WHERE strNombreUsuario = ? LIMIT 1";
+        $query = $db->query($sql, [$postUsuario]);
         $user = $query->getRow();
 
-        // --- DIAGNÓSTICO 2: ¿Encontró la fila? ---
+        // 3. VALIDACIÓN DE USUARIO
         if (!$user) {
-            // Esto nos dirá si es un problema de mayúsculas o espacios
-            return $this->respond(['msg' => "No existe: [$postUsuario] en la tabla Usuario."], 401);
+            return $this->respond(['msg' => 'El usuario no existe'], 401);
         }
 
-        // --- DIAGNÓSTICO 3: Estado ---
+        // 4. VALIDACIÓN DE ESTADO
         if ($user->idEstado == 0) {
-            return $this->respond(['msg' => 'Usuario inactivo.'], 403);
+            return $this->respond(['msg' => 'Usuario inactivo'], 403);
         }
 
-        // --- DIAGNÓSTICO 4: La contraseña ---
-        // Usamos trim() por si la base de datos tiene espacios invisibles
-        if (trim($user->srtPwd) !== trim($postPassword)) {
-            return $this->respond([
-                'msg' => "Pass mal. BD: [" . $user->srtPwd . "] vs Recibido: [" . $postPassword . "]"
-            ], 401);
+        // 5. VALIDACIÓN DE CONTRASEÑA
+        // Columna Password: strPwd (según tu imagen)
+        if ($user->strPwd !== $postPassword) {
+            return $this->respond(['msg' => 'Contraseña incorrecta'], 401);
         }
 
-        // 3. SI TODO PASÓ, CREAR SESIÓN
+        // 6. CREAR SESIÓN
         $ses_data = [
             'idUsuario'    => $user->id,
-            'nombre'       => $user->srtNombreUsuario,
+            'nombre'       => $user->strNombreUsuario,
             'idPerfil'     => $user->idPerfil,
-            'foto'         => base_url('uploads/' . ($user->srtImagen ?? 'default.png')),
+            'foto'         => base_url('uploads/' . ($user->strImagen ?? 'default.png')),
             'isLoggedIn'   => true
         ];
         $session->set($ses_data);

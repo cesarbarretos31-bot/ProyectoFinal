@@ -75,7 +75,7 @@
 
 <script>
     // Variables obtenidas directamente de PHP (Sesión del servidor)
-    const PERFIL_ID = "<?= $idPerfil ?>";
+    const PERFIL_ID = "<?= session()->get('idPerfil') ?>";
 
     document.addEventListener('DOMContentLoaded', () => {
         if (PERFIL_ID) {
