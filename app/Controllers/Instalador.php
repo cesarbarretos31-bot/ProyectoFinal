@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Controllers;
+
 use CodeIgniter\Controller;
 
 class Instalador extends Controller
@@ -8,17 +10,17 @@ class Instalador extends Controller
     {
         $db = \Config\Database::connect();
 
-        // Desactivar checks para poder limpiar
+        // Desactivamos llaves foráneas para poder limpiar las tablas sin errores
         $db->query("SET FOREIGN_KEY_CHECKS = 0;");
         
-        // USA EL NOMBRE EXACTO: Modulo
+        // NOMBRES EXACTOS DE TUS TABLAS
         $db->table('Modulo')->truncate(); 
-        $db->table('menu')->truncate();
+        $db->table('Menu')->truncate();   
         $db->table('permisos_perfil')->truncate();
         
         $db->query("SET FOREIGN_KEY_CHECKS = 1;");
 
-        // Datos de los módulos
+        // 1. Insertar en Modulo (con M mayúscula)
         $modulos = [
             ['id' => 1, 'strNombreModulo' => 'Perfil'],
             ['id' => 2, 'strNombreModulo' => 'Módulo'],
@@ -29,15 +31,37 @@ class Instalador extends Controller
             ['id' => 7, 'strNombreModulo' => 'Principal 2.1'],
             ['id' => 8, 'strNombreModulo' => 'Principal 2.2'],
         ];
-
-        // INSERTAR EN LA TABLA CORRECTA
         $db->table('Modulo')->insertBatch($modulos);
 
-        // ... El resto del código de insertar en 'menu' y 'permisos_perfil' se queda igual
-        // porque esas tablas sí están en minúsculas según tu SQL anterior.
-        
-        // (Asegúrate de copiar el resto del código del paso anterior aquí abajo)
-        
-        return "Instalación completada en la tabla Modulo.";
+        // 2. Insertar en Menu (con M mayúscula)
+        // idMenu: 1=Seguridad, 2=Principal 1, 3=Principal 2
+        $menuEstructura = [
+            ['idMenu' => 1, 'idModulo' => 1],
+            ['idMenu' => 1, 'idModulo' => 2],
+            ['idMenu' => 1, 'idModulo' => 3],
+            ['idMenu' => 1, 'idModulo' => 4],
+            ['idMenu' => 2, 'idModulo' => 5],
+            ['idMenu' => 2, 'idModulo' => 6],
+            ['idMenu' => 3, 'idModulo' => 7],
+            ['idMenu' => 3, 'idModulo' => 8],
+        ];
+        $db->table('Menu')->insertBatch($menuEstructura);
+
+        // 3. Permisos para el Admin (idPerfil = 1)
+        $permisosAdmin = [];
+        foreach (range(1, 8) as $idModulo) {
+            $permisosAdmin[] = [
+                'idModulo'    => $idModulo,
+                'idPerfil'    => 1, 
+                'bitAgregar'  => 1,
+                'bitEditar'   => 1,
+                'bitConsulta' => 1,
+                'bitEliminar' => 1,
+                'bitDetalle'  => 1
+            ];
+        }
+        $db->table('permisos_perfil')->insertBatch($permisosAdmin);
+
+        return "<h1>¡Listo!</h1><p>Tablas 'Modulo' y 'Menu' actualizadas con la estructura del PDF.</p>";
     }
 }

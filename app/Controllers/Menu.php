@@ -14,9 +14,9 @@ class Menu extends BaseController {
 $sql = "SELECT 
             m.idMenu, 
             modu.strNombreModulo, 
-            p.bitConsulta 
-        FROM menu m
-        JOIN Modulo modu ON m.idModulo = modu.id -- <-- AQUÍ 'Modulo' con M mayúscula
+            p.bitConsulta, p.bitAgregar, p.bitEditar, p.bitEliminar
+        FROM Menu m -- M mayúscula
+        JOIN Modulo modu ON m.idModulo = modu.id -- M mayúscula
         JOIN permisos_perfil p ON p.idModulo = modu.id
         WHERE p.idPerfil = ? AND p.bitConsulta = 1
         ORDER BY m.idMenu ASC";
