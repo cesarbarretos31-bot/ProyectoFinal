@@ -11,13 +11,14 @@ class Menu extends BaseController {
 
         // Consulta que trae: El nombre del menú padre (Seguridad, Principal 1, etc) y el módulo
         // Cambia esto en tu query:
+// En tu controlador de Menu o donde hagas la consulta del sidebar:
 $sql = "SELECT 
             m.idMenu, 
             modu.strNombreModulo, 
-            p.bitConsulta, p.bitAgregar, p.bitEditar, p.bitEliminar
-        FROM Menu m -- M mayúscula
-        JOIN Modulo modu ON m.idModulo = modu.id -- M mayúscula
-        JOIN permisos_perfil p ON p.idModulo = modu.id
+            p.bitConsulta 
+        FROM Menu m 
+        JOIN Modulo modu ON m.idModulo = modu.id 
+        JOIN PermisosPerfil p ON p.idModulo = modu.id -- <-- TABLA CON MAYÚSCULAS
         WHERE p.idPerfil = ? AND p.bitConsulta = 1
         ORDER BY m.idMenu ASC";
         $query = $db->query($sql, [$idPerfil]);

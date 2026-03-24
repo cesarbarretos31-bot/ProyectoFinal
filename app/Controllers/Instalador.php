@@ -10,17 +10,17 @@ class Instalador extends Controller
     {
         $db = \Config\Database::connect();
 
-        // Desactivamos llaves foráneas para poder limpiar las tablas sin errores
+        // 1. Desactivar checks para que nos deje borrar y meter datos
         $db->query("SET FOREIGN_KEY_CHECKS = 0;");
         
-        // NOMBRES EXACTOS DE TUS TABLAS
+        // CORRECCIÓN DE NOMBRES EXACTOS SEGÚN TU BD
         $db->table('Modulo')->truncate(); 
         $db->table('Menu')->truncate();   
-        $db->table('permisos_perfil')->truncate();
+        $db->table('PermisosPerfil')->truncate(); // <-- Corregido con M mayúscula
         
         $db->query("SET FOREIGN_KEY_CHECKS = 1;");
 
-        // 1. Insertar en Modulo (con M mayúscula)
+        // 2. Insertar los Módulos del PDF
         $modulos = [
             ['id' => 1, 'strNombreModulo' => 'Perfil'],
             ['id' => 2, 'strNombreModulo' => 'Módulo'],
@@ -33,8 +33,7 @@ class Instalador extends Controller
         ];
         $db->table('Modulo')->insertBatch($modulos);
 
-        // 2. Insertar en Menu (con M mayúscula)
-        // idMenu: 1=Seguridad, 2=Principal 1, 3=Principal 2
+        // 3. Insertar la estructura del Menú (Jerarquía)
         $menuEstructura = [
             ['idMenu' => 1, 'idModulo' => 1],
             ['idMenu' => 1, 'idModulo' => 2],
@@ -47,7 +46,8 @@ class Instalador extends Controller
         ];
         $db->table('Menu')->insertBatch($menuEstructura);
 
-        // 3. Permisos para el Admin (idPerfil = 1)
+        // 4. Permisos para el Administrador (idPerfil = 1)
+        // OJO: Si tu perfil de admin tiene otro ID, cámbialo aquí
         $permisosAdmin = [];
         foreach (range(1, 8) as $idModulo) {
             $permisosAdmin[] = [
@@ -60,8 +60,8 @@ class Instalador extends Controller
                 'bitDetalle'  => 1
             ];
         }
-        $db->table('permisos_perfil')->insertBatch($permisosAdmin);
+        $db->table('PermisosPerfil')->insertBatch($permisosAdmin);
 
-        return "<h1>¡Listo!</h1><p>Tablas 'Modulo' y 'Menu' actualizadas con la estructura del PDF.</p>";
+        return "<h1>¡A huevo!</h1><p>Tablas 'Modulo', 'Menu' y 'PermisosPerfil' llenas. Ya puedes probar el login.</p>";
     }
 }
