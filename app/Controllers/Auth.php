@@ -10,7 +10,6 @@ class Auth extends BaseController
 
     public function index()
     {
-        // Si ya hay sesión, directo al dashboard
         if (session()->get('isLoggedIn')) {
             return redirect()->to(base_url('dashboard'));
         }
@@ -22,33 +21,40 @@ class Auth extends BaseController
         $session = session();
         $db = \Config\Database::connect();
 
-        // 1. Recibir datos del formulario (POST)
+        // 1. CAPTURAR DATOS
         $postUsuario  = $this->request->getPost('usuario'); 
         $postPassword = $this->request->getPost('password');
 
-        // 2. QUERY CON TUS NOMBRES EXACTOS
-        // Tabla: Usuario | Columna: srtNombreUsuario
+        // --- DIAGNÓSTICO 1: ¿Viene vacío? ---
+        if (empty($postUsuario) || empty($postPassword)) {
+            return $this->respond(['msg' => 'PHP no recibió nada. Revisa los nombres en el FormData.'], 401);
+        }
+
+        // 2. BUSCAR AL USUARIO
         $sql = "SELECT * FROM Usuario WHERE srtNombreUsuario = ? LIMIT 1";
-        $query = $db->query($sql, [$postUsuario]);
+        $query = $db->query($sql, [trim($postUsuario)]);
         $user = $query->getRow();
 
-        // 3. VALIDACIÓN DE EXISTENCIA
+        // --- DIAGNÓSTICO 2: ¿Encontró la fila? ---
         if (!$user) {
-            return $this->respond(['msg' => 'El usuario no existe'], 401);
+            // Esto nos dirá si es un problema de mayúsculas o espacios
+            return $this->respond(['msg' => "No existe: [$postUsuario] en la tabla Usuario."], 401);
         }
 
-        // 4. VALIDACIÓN DE ESTADO (Punto 21 del PDF)
+        // --- DIAGNÓSTICO 3: Estado ---
         if ($user->idEstado == 0) {
-            return $this->respond(['msg' => 'Usuario inactivo. Contacte al administrador.'], 403);
+            return $this->respond(['msg' => 'Usuario inactivo.'], 403);
         }
 
-        // 5. VALIDACIÓN DE CONTRASEÑA (Columna: srtPwd)
-        // Usamos comparación directa (password_verify es solo si están hasheadas)
-        if ($user->srtPwd !== $postPassword) {
-            return $this->respond(['msg' => 'Contraseña incorrecta'], 401);
+        // --- DIAGNÓSTICO 4: La contraseña ---
+        // Usamos trim() por si la base de datos tiene espacios invisibles
+        if (trim($user->srtPwd) !== trim($postPassword)) {
+            return $this->respond([
+                'msg' => "Pass mal. BD: [" . $user->srtPwd . "] vs Recibido: [" . $postPassword . "]"
+            ], 401);
         }
 
-        // 6. CREAR SESIÓN CON TUS COLUMNAS
+        // 3. SI TODO PASÓ, CREAR SESIÓN
         $ses_data = [
             'idUsuario'    => $user->id,
             'nombre'       => $user->srtNombreUsuario,
