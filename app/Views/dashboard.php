@@ -107,7 +107,11 @@
                     sidebar.innerHTML += `<li class="nav-small-cap px-3 text-uppercase">${nombresMenus[p.idMenu] || 'MODULOS'}</li>`;
                 }
 
-                const urlModulo = p.strNombreModulo.replace(/\s+/g, '-').toLowerCase();
+              const urlModulo = p.strNombreModulo
+    .normalize("NFD") // Separa el acento de la letra
+    .replace(/[\u0300-\u036f]/g, "") // Borra el acento
+    .replace(/\s+/g, '-') // Espacios por guiones
+    .toLowerCase(); // Todo a minúsculas
                 
                 sidebar.innerHTML += `
                     <li class="nav-item">

@@ -8,7 +8,8 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('testdb', 'TestDB::index');
 $routes->get('insertar-prueba', 'Prueba::insertar');
-
+$routes->get('perfil', 'Perfil::index');         // Los datos JSON
+$routes->get('perfil/vista', 'Perfil::vista');   // El HTML del módulo
 $routes->get('/', 'Auth::index');
 $routes->get('login', 'Auth::index');
 $routes->get('/', 'Auth::index');

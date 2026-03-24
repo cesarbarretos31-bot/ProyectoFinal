@@ -42,4 +42,8 @@ class Perfil extends BaseController
         }
         return $this->fail('No se pudo eliminar');
     }
+    public function vista() {
+    // Esta función solo devuelve el pedazo de HTML del módulo
+    return view('modulos/perfil_view'); 
+}
 }
