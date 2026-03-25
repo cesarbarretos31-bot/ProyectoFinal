@@ -60,13 +60,11 @@
 </div>
 
 <script>
-// Encapsulamos el módulo para evitar conflictos con otros componentes
 (function() {
     let paginaActual = 1;
     const modalEl = document.getElementById('modalPerfil');
     const bsModal = new bootstrap.Modal(modalEl);
 
-    // Hacer la función de abrir modal accesible globalmente para el botón
     window.abrirModalNuevo = () => {
         document.getElementById('formPerfil').reset();
         bsModal.show();
@@ -106,17 +104,16 @@
             }
             tabla.innerHTML = html;
 
-            // 2. Limpieza y Renderizado de Paginación (Quitando los comentarios de Debug)
+            // 2. Limpieza de Paginación
             if (res.pager) {
-                // El replace limpia los comentarios let pagerHtml = res.pager.replace(//g, ""); 
+                // EXPRESIÓN REGULAR PARA QUITAR EL DEBUG DE CI4
+                let pagerHtml = res.pager.replace(//g, ""); 
                 paginador.innerHTML = pagerHtml;
 
-                // Estilizamos los elementos para que usen Bootstrap correctamente
                 paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm', 'mb-0'));
                 paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));
                 paginador.querySelectorAll('a').forEach(a => {
                     a.classList.add('page-link');
-                    // Interceptamos el clic para que la navegación sea AJAX
                     a.onclick = (e) => {
                         e.preventDefault();
                         const url = new URL(a.href);
@@ -125,53 +122,33 @@
                 });
             }
         } catch (err) {
-            console.error("Error cargando perfiles:", err);
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de conexión.</td></tr>';
+            console.error("Error:", err);
+            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos.</td></tr>';
         }
     }
 
-    // Lógica para Guardar (POST)
     document.getElementById('formPerfil').onsubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
-        
-        try {
-            const response = await fetch('<?= base_url("perfil/crear") ?>', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                bsModal.hide();
-                cargarPerfiles(paginaActual); // Recargar la tabla
-            } else {
-                alert("Error al guardar el perfil.");
-            }
-        } catch (err) {
-            alert("Error de red.");
+        const response = await fetch('<?= base_url("perfil/crear") ?>', { method: 'POST', body: formData });
+        if (response.ok) {
+            bsModal.hide();
+            cargarPerfiles(paginaActual);
+        } else {
+            alert("Error al guardar.");
         }
     };
 
-    // Lógica para Eliminar (DELETE)
     window.borrarPerfil = async (id) => {
-        if (!confirm("¿Estás seguro de eliminar este perfil?")) return;
-        
-        try {
-            const response = await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                cargarPerfiles(paginaActual);
-            } else {
-                alert("No se pudo eliminar. Es posible que el perfil esté asignado a un usuario activo.");
-            }
-        } catch (err) {
-            alert("Error al procesar la solicitud.");
+        if (!confirm("¿Eliminar perfil?")) return;
+        const response = await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            cargarPerfiles(paginaActual);
+        } else {
+            alert("Error: El perfil puede estar en uso.");
         }
     };
 
-    // Iniciar el módulo
     cargarPerfiles();
 })();
 </script>
