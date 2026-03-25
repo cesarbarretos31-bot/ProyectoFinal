@@ -9,55 +9,39 @@ class Perfil extends BaseController
 {
     use ResponseTrait;
 
-    public function vista()
-    {
+    public function vista() {
         return view('modulos/perfil_view');
     }
-public function index()
-{
-    // Limpiar cualquier salida previa que pueda generar espacios en blanco
-    if (ob_get_level() > 0) ob_end_clean();
 
-    $model = new \App\Models\PerfilModel();
-    $data = [
-        'perfiles' => $model->paginate(5),
-        'pager'    => $model->pager->links()
-    ];
+    public function index() {
+        // Limpieza absoluta del buffer para evitar espacios o basura
+        while (ob_get_level() > 0) ob_end_clean();
 
-    // Configurar cabeceras manualmente para asegurar compatibilidad
-    header('Content-Type: application/json; charset=utf-8');
-    header('Access-Control-Allow-Origin: *'); // Evitar bloqueos de CORS si los hay
-    
-    echo json_encode($data);
-    
-    // IMPORTANTE: die() detiene a CodeIgniter antes de que inyecte el Toolbar de Debug
-    die(); 
-}
+        $model = new PerfilModel();
+        $data = [
+            'perfiles' => $model->paginate(5),
+            'pager'    => $model->pager->links()
+        ];
 
-    public function crear()
-    {
+        // Desactivar Toolbar manualmente por si Railway está en modo development
+        if (ENVIRONMENT !== 'production') {
+            service('toolbar')->respond();
+        }
+
+        return $this->response->setJSON($data);
+    }
+
+    public function crear() {
         $model = new PerfilModel();
         $data = [
             'strNombrePerfil'  => $this->request->getPost('strNombrePerfil'),
             'bitAdministrador' => $this->request->getPost('bitAdministrador') ? 1 : 0
         ];
-
-        if ($model->insert($data)) {
-            return $this->respondCreated(['msg' => 'Perfil creado']);
-        }
-        return $this->fail('Error al guardar');
+        return ($model->insert($data)) ? $this->respondCreated(['msg' => 'ok']) : $this->fail('Error');
     }
 
-    public function eliminar($id)
-    {
+    public function eliminar($id) {
         $model = new PerfilModel();
-        try {
-            if ($model->delete($id)) {
-                return $this->respondDeleted(['msg' => 'Perfil eliminado']);
-            }
-        } catch (\Exception $e) {
-            return $this->fail('No se pudo eliminar (posiblemente tiene usuarios asociados)');
-        }
-        return $this->fail('No se pudo eliminar');
+        return ($model->delete($id)) ? $this->respondDeleted(['msg' => 'ok']) : $this->fail('Error');
     }
 }

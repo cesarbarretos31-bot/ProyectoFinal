@@ -1,136 +1,74 @@
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Seguridad</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Perfil</li>
-    </ol>
-</nav>
-
-<div class="card shadow-sm border-0 animate__animated animate__fadeIn">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-person-badge me-2"></i>Gestión de Perfiles</h5>
-        <button class="btn btn-primary btn-sm" onclick="abrirModalNuevo()">
-            <i class="bi bi-plus-circle me-1"></i> Nuevo Perfil
-        </button>
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white d-flex justify-content-between py-3">
+        <h5 class="mb-0 fw-bold">Gestión de Perfiles</h5>
+        <button class="btn btn-primary btn-sm" onclick="abrirModalNuevo()">Nuevo Perfil</button>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 80px;">ID</th>
-                        <th>Nombre Perfil</th>
-                        <th>Administrador</th>
-                        <th class="text-center" style="width: 150px;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaPerfiles">
-                    <tr><td colspan="4" class="text-center p-4">Iniciando carga...</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div id="paginacionContainer" class="d-flex justify-content-center mt-3"></div>
+        <table class="table table-hover">
+            <thead>
+                <tr><th>ID</th><th>Nombre</th><th>Admin</th><th class="text-center">Acciones</th></tr>
+            </thead>
+            <tbody id="tablaPerfiles"></tbody>
+        </table>
+        <div id="paginacionContainer" class="d-flex justify-content-center"></div>
     </div>
 </div>
 
-<div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Registrar Perfil</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="modalPerfil" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <form id="formPerfil">
+            <div class="modal-body">
+                <input type="text" name="strNombrePerfil" class="form-control mb-2" placeholder="Nombre" required>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="bitAdministrador" value="1">
+                    <label class="form-check-label">¿Es Administrador?</label>
+                </div>
             </div>
-            <form id="formPerfil">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nombre del Perfil</label>
-                        <input type="text" name="strNombrePerfil" class="form-control" placeholder="Ej: Supervisor" required>
-                    </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="bitAdministrador" value="1" id="checkAdmin">
-                        <label class="form-check-label small" for="checkAdmin">¿Es Administrador?</label>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Guardar Datos</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div></div>
 </div>
 
 <script>
 (function() {
-    let paginaActual = 1;
-    const modalEl = document.getElementById('modalPerfil');
-    const bsModal = new (bootstrap.Modal || window.bootstrap.Modal)(modalEl);
+    const bsModal = new bootstrap.Modal(document.getElementById('modalPerfil'));
 
-    window.abrirModalNuevo = () => {
-        document.getElementById('formPerfil').reset();
-        bsModal.show();
-    };
-
-    async function cargarPerfiles(pagina = 1) {
-        paginaActual = pagina;
-        const tabla = document.getElementById('tablaPerfiles');
-        const paginador = document.getElementById('paginacionContainer');
-
+    async function cargarPerfiles(p = 1) {
         try {
-            console.log("Intentando cargar página:", pagina);
-            const response = await fetch(`<?= base_url('perfil') ?>?page=${pagina}`);
+            const response = await fetch(`<?= base_url('perfil') ?>?page=${p}`);
+            let text = await response.text();
             
-            // BLINDAJE 1: Obtener como texto para limpiar basura de Debug
-            let textoRaw = await response.text();
-            
-            // Si el JSON trae comentarios HTML al final (el Debug de CI4), los cortamos
-            if (textoRaw.indexOf('/g, ""); 
-                paginador.innerHTML = pagerHtml;
-
-                paginador.querySelectorAll('a').forEach(a => {
-                    a.classList.add('page-link');
-                    // Evitamos que el link recargue la página completa
-                    const hrefOriginal = a.getAttribute('href');
-                    a.setAttribute('href', '#'); 
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        const urlParams = new URLSearchParams(hrefOriginal.split('?')[1]);
-                        cargarPerfiles(urlParams.get('page') || 1);
-                    };
+            // LIMPIEZA: Si hay basura de debug al final, la cortamos
+            if (text.includes('/g, "");
+                // Re-bind links
+                document.querySelectorAll('#paginacionContainer a').forEach(a => {
+                    const url = new URL(a.href);
+                    const page = url.searchParams.get('page');
+                    a.href = "#";
+                    a.onclick = () => cargarPerfiles(page);
                 });
-                
-                paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));
-                paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm'));
             }
-        } catch (err) {
-            console.error("ERROR CRÍTICO EN AJAX:", err);
-            tabla.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error: ${err.message}</td></tr>`;
-        }
+        } catch (e) { console.error(e); }
     }
 
-    // Funciones globales para los botones
-    window.borrarPerfil = async (id) => {
-        if (!confirm("¿Eliminar este perfil?")) return;
-        try {
-            const response = await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
-            if (response.ok) cargarPerfiles(paginaActual);
-        } catch (e) { alert("Error de conexión"); }
-    };
-
+    window.abrirModalNuevo = () => { document.getElementById('formPerfil').reset(); bsModal.show(); };
+    
     document.getElementById('formPerfil').onsubmit = async (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch('<?= base_url("perfil/crear") ?>', {
-                method: 'POST',
-                body: new FormData(e.target)
-            });
-            if (response.ok) {
-                bsModal.hide();
-                cargarPerfiles(paginaActual);
-            }
-        } catch (e) { alert("Error al guardar"); }
+        await fetch('<?= base_url("perfil/crear") ?>', { method: 'POST', body: new FormData(e.target) });
+        bsModal.hide();
+        cargarPerfiles();
     };
 
-    // Ejecutar carga inicial
+    window.borrar = async (id) => {
+        if(confirm('¿Seguro?')) {
+            await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
+            cargarPerfiles();
+        }
+    };
+
     cargarPerfiles();
 })();
 </script>
