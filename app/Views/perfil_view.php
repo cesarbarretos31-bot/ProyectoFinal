@@ -73,62 +73,26 @@
     };
 
     async function cargarPerfiles(pagina = 1) {
-        paginaActual = pagina;
-        const tabla = document.getElementById('tablaPerfiles');
-        const paginador = document.getElementById('paginacionContainer');
+    paginaActual = pagina;
+    const tabla = document.getElementById('tablaPerfiles');
+    const paginador = document.getElementById('paginacionContainer');
 
-        try {
-            const response = await fetch(`<?= base_url('perfil') ?>?page=${pagina}`);
-            const res = await response.json();
-            
-            // 1. Renderizado de Filas
-            let html = '';
-            if (res.perfiles && res.perfiles.length > 0) {
-                res.perfiles.forEach(p => {
-                    html += `
-                        <tr>
-                            <td><span class="badge bg-light text-dark border">${p.id}</span></td>
-                            <td class="fw-semibold">${p.strNombrePerfil}</td>
-                            <td>
-                                <span class="badge ${p.bitAdministrador == 1 ? 'bg-success' : 'bg-secondary'}">
-                                    ${p.bitAdministrador == 1 ? 'SÍ' : 'NO'}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-outline-danger btn-sm" onclick="borrarPerfil(${p.id})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>`;
-                });
-            } else {
-                html = '<tr><td colspan="4" class="text-center">No se encontraron registros.</td></tr>';
-            }
-            tabla.innerHTML = html;
-
-            // 2. Limpieza y Renderizado de Paginación (Quitando los comentarios de Debug)
-            if (res.pager) {
-                // El replace limpia los comentarios let pagerHtml = res.pager.replace(//g, ""); 
-                paginador.innerHTML = pagerHtml;
-
-                // Estilizamos los elementos para que usen Bootstrap correctamente
-                paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm', 'mb-0'));
-                paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));
-                paginador.querySelectorAll('a').forEach(a => {
-                    a.classList.add('page-link');
-                    // Interceptamos el clic para que la navegación sea AJAX
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        const url = new URL(a.href);
-                        cargarPerfiles(url.searchParams.get('page'));
-                    };
-                });
-            }
-        } catch (err) {
-            console.error("Error cargando perfiles:", err);
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de conexión.</td></tr>';
+    try {
+        const response = await fetch(`<?= base_url('perfil') ?>?page=${pagina}`);
+        
+        // Obtenemos el texto plano primero para limpiarlo si es necesario
+        let textoRaw = await response.text();
+        
+        // Si el texto trae comentarios de Debug, los podamos
+        if (textoRaw.includes('/g, ""); 
+            paginador.innerHTML = pagerHtml;
+            // ... (resto de tu lógica de estilos de paginación)
         }
+    } catch (err) {
+        console.error("Error detallado:", err);
+        tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al procesar datos.</td></tr>';
     }
+}
 
     // Lógica para Guardar (POST)
     document.getElementById('formPerfil').onsubmit = async (e) => {

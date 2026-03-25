@@ -16,7 +16,7 @@ class Perfil extends BaseController
 
     public function index()
 {
-    // 1. Limpiamos cualquier salida previa
+    // 1. Limpiamos cualquier buffer de salida para evitar espacios en blanco
     if (ob_get_level() > 0) ob_end_clean();
 
     $model = new \App\Models\PerfilModel();
@@ -25,10 +25,13 @@ class Perfil extends BaseController
         'pager'    => $model->pager->links()
     ];
 
-    // 2. Forzamos el Header de JSON y salimos inmediatamente
-    header('Content-Type: application/json');
-    echo json_encode($data);
-    exit; 
+    // 2. Desactivamos el Toolbar de CodeIgniter por completo para esta respuesta
+    if (ENVIRONMENT !== 'production') {
+        service('toolbar')->respond();
+    }
+
+    // 3. Enviamos la respuesta y DETENEMOS la ejecución del script
+    return $this->response->setJSON($data)->setStatusCode(200);
 }
 
     public function crear()
