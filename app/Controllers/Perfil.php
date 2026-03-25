@@ -10,15 +10,22 @@ class Perfil extends BaseController
     use ResponseTrait;
 
     public function index()
-    {
-        $model = new PerfilModel();
-        // Paginado para 5 filas según el PDF 
-        $data = $model->paginate(5);
-        return $this->respond([
-            'perfiles' => $data,
-            'pager'    => $model->pager->links()
-        ]);
+{
+    $model = new \App\Models\PerfilModel();
+    
+    // Esto desactiva el Debug Toolbar solo para esta respuesta JSON
+    if (ENVIRONMENT !== 'production') {
+        service('toolbar')->respond();
     }
+
+    $data = [
+        'perfiles' => $model->paginate(5),
+        'pager'    => $model->pager->links()
+    ];
+
+    return $this->response->setJSON($data); 
+    // Usar setJSON es mejor que respond() para evitar que se cuele basura
+}
 
     public function crear()
     {
