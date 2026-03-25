@@ -113,18 +113,35 @@
 // NUEVA FUNCIÓN: Esta es la que hace la magia
 async function cargarModulo(nombre) {
     const contenedor = document.getElementById('mainWrapper');
-    // Convertimos "Perfil" a "perfil" para que coincida con la ruta
     const urlSlug = nombre.toLowerCase().replace(/\s+/g, '-'); 
     
     try {
         // 1. Pedimos la VISTA (el HTML de la tabla)
-        const res = await fetch(`<?= base_url() ?>/${urlSlug}/vista`);
+        // OJO: Le puse index.php para asegurar que Railway no falle
+        const res = await fetch(`<?= base_url('index.php') ?>/${urlSlug}/vista`);
         const html = await res.text();
+        
+        // 2. Inyectamos el HTML al contenedor
         contenedor.innerHTML = html;
         
-        // El script dentro de 'perfil_view.php' se ejecutará automáticamente
-        // y ese script buscará los datos en base_url('/perfil')
+        // 3. EL TRUCO VITAL: Extraer y ejecutar los scripts manualmente
+        const scripts = contenedor.getElementsByTagName('script');
+        for (let i = 0; i < scripts.length; i++) {
+            const scriptOriginal = scripts[i];
+            const scriptNuevo = document.createElement('script');
+            
+            // Copiamos el contenido del script
+            scriptNuevo.text = scriptOriginal.innerText;
+            
+            // Lo agregamos al body para que el navegador lo ejecute
+            document.body.appendChild(scriptNuevo);
+            
+            // Lo removemos para no ensuciar el código (ya se ejecutó)
+            document.body.removeChild(scriptNuevo);
+        }
+
     } catch (e) {
+        console.error("Error al inyectar módulo:", e);
         contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar módulo</div>';
     }
 }
