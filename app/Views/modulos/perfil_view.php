@@ -63,63 +63,69 @@
 (function() {
     let paginaActual = 1;
     const modalEl = document.getElementById('modalPerfil');
-    const bsModal = new (bootstrap.Modal || window.bootstrap.Modal)(modalEl);
+    const bsModal = new bootstrap.Modal(modalEl);
 
-    window.abrirModalNuevo = () => {
-        document.getElementById('formPerfil').reset();
-        bsModal.show();
-    };
-
+    // Función para cargar los datos
     async function cargarPerfiles(pagina = 1) {
         paginaActual = pagina;
         const tabla = document.getElementById('tablaPerfiles');
         const paginador = document.getElementById('paginacionContainer');
 
         try {
-            console.log("Intentando cargar página:", pagina);
-            const response = await fetch(`<?= base_url('perfil') ?>?page=${pagina}`);
-            
-            // BLINDAJE 1: Obtener como texto para limpiar basura de Debug
-            let textoRaw = await response.text();
-            
-            // Si el JSON trae comentarios HTML al final (el Debug de CI4), los cortamos
-            if (textoRaw.indexOf('/g, ""); 
-                paginador.innerHTML = pagerHtml;
+            // Usamos la ruta que confirmó tu JSON
+            const response = await fetch(`<?= base_url('index.php/perfil') ?>?page=${pagina}`);
+            const res = await response.json();
 
-                paginador.querySelectorAll('a').forEach(a => {
-                    a.classList.add('page-link');
-                    // Evitamos que el link recargue la página completa
-                    const hrefOriginal = a.getAttribute('href');
-                    a.setAttribute('href', '#'); 
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        const urlParams = new URLSearchParams(hrefOriginal.split('?')[1]);
-                        cargarPerfiles(urlParams.get('page') || 1);
-                    };
+            let html = '';
+            if (res.perfiles && res.perfiles.length > 0) {
+                res.perfiles.forEach(p => {
+                    html += `
+                        <tr>
+                            <td>${p.id}</td>
+                            <td>${p.strNombrePerfil}</td>
+                            <td>
+                                <span class="badge ${p.bitAdministrador == '1' ? 'bg-success' : 'bg-secondary'}">
+                                    ${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-danger btn-sm" onclick="borrarPerfil(${p.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
                 });
-                
-                paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));
-                paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm'));
+            } else {
+                html = '<tr><td colspan="4" class="text-center">No hay datos disponibles.</td></tr>';
             }
+            
+            tabla.innerHTML = html;
+            if (paginador) paginador.innerHTML = res.pager || '';
+
         } catch (err) {
-            console.error("ERROR CRÍTICO EN AJAX:", err);
-            tabla.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error: ${err.message}</td></tr>`;
+            console.error("Error cargando tabla:", err);
+            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de conexión con el servidor.</td></tr>';
         }
     }
 
-    // Funciones globales para los botones
+    // Funciones globales vinculadas al módulo
+    window.abrirModalNuevo = () => {
+        document.getElementById('formPerfil').reset();
+        bsModal.show();
+    };
+
     window.borrarPerfil = async (id) => {
         if (!confirm("¿Eliminar este perfil?")) return;
         try {
-            const response = await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
+            const response = await fetch(`<?= base_url("index.php/perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
             if (response.ok) cargarPerfiles(paginaActual);
-        } catch (e) { alert("Error de conexión"); }
+        } catch (e) { alert("Error al intentar eliminar"); }
     };
 
     document.getElementById('formPerfil').onsubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('<?= base_url("perfil/crear") ?>', {
+            const response = await fetch('<?= base_url("index.php/perfil/crear") ?>', {
                 method: 'POST',
                 body: new FormData(e.target)
             });
@@ -127,10 +133,10 @@
                 bsModal.hide();
                 cargarPerfiles(paginaActual);
             }
-        } catch (e) { alert("Error al guardar"); }
+        } catch (e) { alert("Error al guardar los datos"); }
     };
 
-    // Ejecutar carga inicial
+    // Primera carga al abrir el módulo
     cargarPerfiles();
 })();
 </script>
