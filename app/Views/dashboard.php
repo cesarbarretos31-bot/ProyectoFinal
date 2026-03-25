@@ -113,21 +113,19 @@
 // NUEVA FUNCIÓN: Esta es la que hace la magia
 async function cargarModulo(nombre) {
     const contenedor = document.getElementById('mainWrapper');
-    const url = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').toLowerCase();
+    // Convertimos "Perfil" a "perfil" para que coincida con la ruta
+    const urlSlug = nombre.toLowerCase().replace(/\s+/g, '-'); 
     
     try {
-        // Pedimos la VISTA (el HTML), no el INDEX (el JSON)
-        const response = await fetch(`<?= base_url() ?>${url}/vista`);
-        const html = await response.text();
+        // 1. Pedimos la VISTA (el HTML de la tabla)
+        const res = await fetch(`<?= base_url() ?>/${urlSlug}/vista`);
+        const html = await res.text();
         contenedor.innerHTML = html;
         
-        // Actualizar Breadcrumb
-        document.getElementById('breadcrumbArea').innerHTML = `
-            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
-            <li class="breadcrumb-item active">${nombre}</li>
-        `;
-    } catch (error) {
-        contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar el módulo</div>';
+        // El script dentro de 'perfil_view.php' se ejecutará automáticamente
+        // y ese script buscará los datos en base_url('/perfil')
+    } catch (e) {
+        contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar módulo</div>';
     }
 }
 </script>
