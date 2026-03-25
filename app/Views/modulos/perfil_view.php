@@ -24,7 +24,7 @@
                     </tr>
                 </thead>
                 <tbody id="tablaPerfiles">
-                    <tr><td colspan="4" class="text-center p-4">Cargando datos...</td></tr>
+                    <tr><td colspan="4" class="text-center p-4">Iniciando carga...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -63,7 +63,7 @@
 (function() {
     let paginaActual = 1;
     const modalEl = document.getElementById('modalPerfil');
-    const bsModal = new bootstrap.Modal(modalEl);
+    const bsModal = new (bootstrap.Modal || window.bootstrap.Modal)(modalEl);
 
     window.abrirModalNuevo = () => {
         document.getElementById('formPerfil').reset();
@@ -76,79 +76,61 @@
         const paginador = document.getElementById('paginacionContainer');
 
         try {
+            console.log("Intentando cargar página:", pagina);
             const response = await fetch(`<?= base_url('perfil') ?>?page=${pagina}`);
-            const res = await response.json();
             
-            // 1. Renderizado de Filas
-            let html = '';
-            if (res.perfiles && res.perfiles.length > 0) {
-                res.perfiles.forEach(p => {
-                    html += `
-                        <tr>
-                            <td><span class="badge bg-light text-dark border">${p.id}</span></td>
-                            <td class="fw-semibold">${p.strNombrePerfil}</td>
-                            <td>
-                                <span class="badge ${p.bitAdministrador == 1 ? 'bg-success' : 'bg-secondary'}">
-                                    ${p.bitAdministrador == 1 ? 'SÍ' : 'NO'}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-outline-danger btn-sm" onclick="borrarPerfil(${p.id})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>`;
-                });
-            } else {
-                html = '<tr><td colspan="4" class="text-center">No se encontraron registros.</td></tr>';
-            }
-            tabla.innerHTML = html;
+            // BLINDAJE 1: Obtener como texto para limpiar basura de Debug
+            let textoRaw = await response.text();
+            
+            // Si el JSON trae comentarios HTML al final (el Debug de CI4), los cortamos
+            if (textoRaw.indexOf('/g, ""); 
+                paginador.innerHTML = pagerHtml;
 
-            // 2. Limpieza de Paginación
-            if (res.pager) {
-                // EXPRESIÓN REGULAR PARA QUITAR EL DEBUG DE CI4
-                let pagerHtml = res.pager.replace(//g, ""); 
-    paginador.innerHTML = pagerHtml;
-
-                paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm', 'mb-0'));
-                paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));
                 paginador.querySelectorAll('a').forEach(a => {
                     a.classList.add('page-link');
+                    // Evitamos que el link recargue la página completa
+                    const hrefOriginal = a.getAttribute('href');
+                    a.setAttribute('href', '#'); 
                     a.onclick = (e) => {
                         e.preventDefault();
-                        const url = new URL(a.href);
-                        cargarPerfiles(url.searchParams.get('page'));
+                        const urlParams = new URLSearchParams(hrefOriginal.split('?')[1]);
+                        cargarPerfiles(urlParams.get('page') || 1);
                     };
                 });
+                
+                paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));
+                paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm'));
             }
         } catch (err) {
-            console.error("Error:", err);
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos.</td></tr>';
+            console.error("ERROR CRÍTICO EN AJAX:", err);
+            tabla.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error: ${err.message}</td></tr>`;
         }
     }
 
+    // Funciones globales para los botones
+    window.borrarPerfil = async (id) => {
+        if (!confirm("¿Eliminar este perfil?")) return;
+        try {
+            const response = await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
+            if (response.ok) cargarPerfiles(paginaActual);
+        } catch (e) { alert("Error de conexión"); }
+    };
+
     document.getElementById('formPerfil').onsubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
-        const response = await fetch('<?= base_url("perfil/crear") ?>', { method: 'POST', body: formData });
-        if (response.ok) {
-            bsModal.hide();
-            cargarPerfiles(paginaActual);
-        } else {
-            alert("Error al guardar.");
-        }
+        try {
+            const response = await fetch('<?= base_url("perfil/crear") ?>', {
+                method: 'POST',
+                body: new FormData(e.target)
+            });
+            if (response.ok) {
+                bsModal.hide();
+                cargarPerfiles(paginaActual);
+            }
+        } catch (e) { alert("Error al guardar"); }
     };
 
-    window.borrarPerfil = async (id) => {
-        if (!confirm("¿Eliminar perfil?")) return;
-        const response = await fetch(`<?= base_url("perfil/eliminar") ?>/${id}`, { method: 'DELETE' });
-        if (response.ok) {
-            cargarPerfiles(paginaActual);
-        } else {
-            alert("Error: El perfil puede estar en uso.");
-        }
-    };
-
+    // Ejecutar carga inicial
     cargarPerfiles();
 })();
 </script>

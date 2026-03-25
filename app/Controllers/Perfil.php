@@ -13,10 +13,9 @@ class Perfil extends BaseController
     {
         return view('modulos/perfil_view');
     }
-
-    public function index()
+public function index()
 {
-    // 1. Limpiamos cualquier buffer de salida para evitar espacios en blanco
+    // Limpiar cualquier salida previa que pueda generar espacios en blanco
     if (ob_get_level() > 0) ob_end_clean();
 
     $model = new \App\Models\PerfilModel();
@@ -25,13 +24,14 @@ class Perfil extends BaseController
         'pager'    => $model->pager->links()
     ];
 
-    // 2. Desactivamos el Toolbar de CodeIgniter por completo para esta respuesta
-    if (ENVIRONMENT !== 'production') {
-        service('toolbar')->respond();
-    }
-
-    // 3. Enviamos la respuesta y DETENEMOS la ejecución del script
-    return $this->response->setJSON($data)->setStatusCode(200);
+    // Configurar cabeceras manualmente para asegurar compatibilidad
+    header('Content-Type: application/json; charset=utf-8');
+    header('Access-Control-Allow-Origin: *'); // Evitar bloqueos de CORS si los hay
+    
+    echo json_encode($data);
+    
+    // IMPORTANTE: die() detiene a CodeIgniter antes de que inyecte el Toolbar de Debug
+    die(); 
 }
 
     public function crear()
