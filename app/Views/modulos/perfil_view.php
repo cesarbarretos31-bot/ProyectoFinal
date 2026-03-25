@@ -108,7 +108,7 @@
             if (res.pager) {
                 // EXPRESIÓN REGULAR PARA QUITAR EL DEBUG DE CI4
                 let pagerHtml = res.pager.replace(//g, ""); 
-                paginador.innerHTML = pagerHtml;
+    paginador.innerHTML = pagerHtml;
 
                 paginador.querySelectorAll('ul').forEach(ul => ul.classList.add('pagination', 'pagination-sm', 'mb-0'));
                 paginador.querySelectorAll('li').forEach(li => li.classList.add('page-item'));

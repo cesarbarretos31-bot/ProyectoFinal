@@ -15,21 +15,21 @@ class Perfil extends BaseController
     }
 
     public function index()
-    {
-        $model = new PerfilModel();
+{
+    // 1. Limpiamos cualquier salida previa
+    if (ob_get_level() > 0) ob_end_clean();
 
-        $data = [
-            'perfiles' => $model->paginate(5),
-            'pager'    => $model->pager->links()
-        ];
+    $model = new \App\Models\PerfilModel();
+    $data = [
+        'perfiles' => $model->paginate(5),
+        'pager'    => $model->pager->links()
+    ];
 
-        // LIMPIEZA EXTREMA: Detenemos el debug toolbar de CI4 para esta petición
-        if (ENVIRONMENT !== 'production') {
-            service('toolbar')->respond();
-        }
-
-        return $this->response->setJSON($data);
-    }
+    // 2. Forzamos el Header de JSON y salimos inmediatamente
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit; 
+}
 
     public function crear()
     {

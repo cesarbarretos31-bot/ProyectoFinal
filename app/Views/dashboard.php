@@ -87,46 +87,49 @@
     });
 
     async function renderizarMenuCompleto() {
-        const sidebar = document.getElementById('sidebar-dinamico');
+    const sidebar = document.getElementById('sidebar-dinamico');
+    try {
+        const response = await fetch(`<?= base_url('menu/obtenerMenu') ?>?idPerfil=${PERFIL_ID}`);
+        const datos = await response.json();
+        sidebar.innerHTML = ''; 
 
-        try {
-            // Ya no enviamos token por header porque la sesión de PHP ya es válida en el servidor
-            const response = await fetch(`<?= base_url('menu/obtenerMenu') ?>?idPerfil=${PERFIL_ID}`);
-            
-            if (!response.ok) throw new Error('No se pudo cargar el menú');
-            
-            const datos = await response.json();
-            sidebar.innerHTML = ''; 
+        let currentMenuId = null;
+        datos.forEach(p => {
+            // ... (tu lógica de títulos de menú igual) ...
 
-            const nombresMenus = { 1: 'SEGURIDAD', 2: 'PRINCIPAL 1', 3: 'PRINCIPAL 2' };
-            let currentMenuId = null;
+            // CAMBIO AQUÍ: Usamos onclick en lugar de un href real
+            sidebar.innerHTML += `
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center" href="javascript:void(0)" 
+                       onclick="cargarModulo('${p.strNombreModulo}')">
+                        <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>
+                        <span>${p.strNombreModulo}</span>
+                    </a>
+                </li>`;
+        });
+    } catch (error) { console.error("Error:", error); }
+}
 
-            datos.forEach(p => {
-                if (p.idMenu !== currentMenuId) {
-                    currentMenuId = p.idMenu;
-                    sidebar.innerHTML += `<li class="nav-small-cap px-3 text-uppercase">${nombresMenus[p.idMenu] || 'MODULOS'}</li>`;
-                }
-
-              const urlModulo = p.strNombreModulo
-    .normalize("NFD") // Separa el acento de la letra
-    .replace(/[\u0300-\u036f]/g, "") // Borra el acento
-    .replace(/\s+/g, '-') // Espacios por guiones
-    .toLowerCase(); // Todo a minúsculas
-                
-                sidebar.innerHTML += `
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" href="<?= base_url() ?>${urlModulo}">
-                            <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>
-                            <span>${p.strNombreModulo}</span>
-                        </a>
-                    </li>`;
-            });
-
-        } catch (error) {
-            console.error("Error:", error);
-            sidebar.innerHTML = '<li class="px-3 text-danger small">Error al cargar módulos</li>';
-        }
+// NUEVA FUNCIÓN: Esta es la que hace la magia
+async function cargarModulo(nombre) {
+    const contenedor = document.getElementById('mainWrapper');
+    const url = nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').toLowerCase();
+    
+    try {
+        // Pedimos la VISTA (el HTML), no el INDEX (el JSON)
+        const response = await fetch(`<?= base_url() ?>${url}/vista`);
+        const html = await response.text();
+        contenedor.innerHTML = html;
+        
+        // Actualizar Breadcrumb
+        document.getElementById('breadcrumbArea').innerHTML = `
+            <li class="breadcrumb-item"><a href="#">Inicio</a></li>
+            <li class="breadcrumb-item active">${nombre}</li>
+        `;
+    } catch (error) {
+        contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar el módulo</div>';
     }
+}
 </script>
 </body>
 </html>
