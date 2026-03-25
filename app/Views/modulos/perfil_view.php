@@ -50,54 +50,88 @@
         </div>
     </div>
 </div>
-
 <script>
 (function() {
-    const modal = new bootstrap.Modal(document.getElementById('modalPerfil'));
-    const base = "<?= base_url('index.php') ?>"; // Ruta con index.php para Railway
+    // Definimos la URL de Railway explícitamente para evitar el ERR_NAME_NOT_RESOLVED
+    const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
+    const modalEl = document.getElementById('modalPerfil');
+    const bsModal = new bootstrap.Modal(modalEl);
 
-    async function listar(p = 1) {
+    async function cargarPerfiles(pagina = 1) {
+        const tabla = document.getElementById('tablaPerfiles');
+        const paginador = document.getElementById('paginacionContainer');
+
         try {
-            const res = await fetch(`${base}/perfil?page=${p}`);
-            const data = await res.json();
-            let html = '';
-            data.perfiles.forEach(row => {
-                html += `<tr>
-                    <td>${row.id}</td>
-                    <td>${row.strNombrePerfil}</td>
-                    <td>${row.bitAdministrador == 1 ? 'SÍ' : 'NO'}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-danger" onclick="eliminar(${row.id})">Borrar</button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('tablaPerfiles').innerHTML = html || '<tr><td colspan="4">Sin datos</td></tr>';
-            document.getElementById('paginacionContainer').innerHTML = data.pager || '';
+            // Requisito: Uso de Fetch API 
+            const response = await fetch(`${API_URL}?page=${pagina}`);
+            if (!response.ok) throw new Error("Fallo en servidor");
             
-            // Hacer que la paginación use Fetch
-            document.querySelectorAll('#paginacionContainer a').forEach(a => {
-                const url = new URL(a.href);
-                const page = url.searchParams.get('page');
-                a.onclick = (e) => { e.preventDefault(); listar(page); };
-                a.href = "#";
-            });
-        } catch (e) { console.error(e); }
+            const res = await response.json();
+            let html = '';
+
+            // Manipulación de Objetos DOM para llenar la tabla 
+            if (res.perfiles && res.perfiles.length > 0) {
+                res.perfiles.forEach(p => {
+                    html += `
+                        <tr>
+                            <td>${p.id}</td>
+                            <td>${p.strNombrePerfil}</td>
+                            <td>
+                                <span class="badge ${p.bitAdministrador == '1' ? 'bg-success' : 'bg-secondary'}">
+                                    ${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-danger btn-sm" onclick="borrarPerfil(${p.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+            } else {
+                html = '<tr><td colspan="4" class="text-center">Sin registros</td></tr>';
+            }
+            
+            tabla.innerHTML = html;
+
+            // Inyectar paginación y capturar clics para evitar recarga de página
+            if (paginador && res.pager) {
+                paginador.innerHTML = res.pager;
+                paginador.querySelectorAll('a').forEach(link => {
+                    const urlParams = new URLSearchParams(new URL(link.href).search);
+                    const p = urlParams.get('page') || 1;
+                    link.onclick = (e) => { e.preventDefault(); cargarPerfiles(p); };
+                    link.href = "#";
+                });
+            }
+        } catch (err) {
+            console.error("Error crítico:", err);
+            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de conexión</td></tr>';
+        }
     }
 
-    window.abrirModal = () => { document.getElementById('formPerfil').reset(); modal.show(); };
+    // Funciones globales para botones
+    window.abrirModalNuevo = () => {
+        document.getElementById('formPerfil').reset();
+        bsModal.show();
+    };
+
+    window.borrarPerfil = async (id) => {
+        if (!confirm("¿Eliminar perfil?")) return;
+        const res = await fetch(`${API_URL}/eliminar/${id}`, { method: 'DELETE' });
+        if (res.ok) cargarPerfiles();
+    };
 
     document.getElementById('formPerfil').onsubmit = async (e) => {
         e.preventDefault();
-        const res = await fetch(`${base}/perfil/crear`, { method: 'POST', body: new FormData(e.target) });
-        if (res.ok) { modal.hide(); listar(); }
+        const res = await fetch(`${API_URL}/crear`, {
+            method: 'POST',
+            body: new FormData(e.target)
+        });
+        if (res.ok) { bsModal.hide(); cargarPerfiles(); }
     };
 
-    window.eliminar = async (id) => {
-        if (!confirm('¿Seguro?')) return;
-        const res = await fetch(`${base}/perfil/eliminar/${id}`, { method: 'DELETE' });
-        if (res.ok) listar();
-    };
-
-    listar();
+    // Carga inicial
+    cargarPerfiles();
 })();
 </script>

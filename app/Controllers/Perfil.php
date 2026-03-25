@@ -11,15 +11,14 @@ class Perfil extends BaseController {
     }
 
     public function index() {
-        $model = new PerfilModel();
-        // Forzamos paginación de 5 filas como pide el proyecto
-        $data = [
-            'perfiles' => $model->paginate(5),
-            'pager'    => $model->pager->links()
-        ];
-        return $this->response->setJSON($data);
-    }
-
+    $model = new \App\Models\PerfilModel();
+    // Requisito estricto del proyecto: 5 filas por página 
+    $data = [
+        'perfiles' => $model->paginate(5),
+        'pager'    => $model->pager->links()
+    ];
+    return $this->response->setJSON($data);
+}
     public function crear() {
         $model = new PerfilModel();
         $data = [
