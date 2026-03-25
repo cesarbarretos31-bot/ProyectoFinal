@@ -50,79 +50,37 @@
         </div>
     </div>
 </div>
+
 <script>
 (function() {
-    // 100% URL Absoluta, sin PHP que lo rompa
-    const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
-    const modalEl = document.getElementById('modalPerfil');
-    // Verificamos si existe el modal antes de inicializarlo para evitar errores
-    const bsModal = modalEl ? new bootstrap.Modal(modalEl) : null;
+    const URL_API = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
 
-    async function cargarPerfiles(pagina = 1) {
-        const tabla = document.getElementById('tablaPerfiles');
-        const paginador = document.getElementById('paginacionContainer');
-
-        if (!tabla) return; // Si no hay tabla, abortamos silenciosamente
-
+    async function cargarTabla(p = 1) {
+        const tbody = document.getElementById('tablaPerfiles');
         try {
-            const response = await fetch(`${API_URL}?page=${pagina}`);
-            if (!response.ok) throw new Error("Servidor no responde");
+            const res = await fetch(`${URL_API}?page=${p}`); [cite: 36]
+            const data = await res.json();
             
-            const res = await response.json();
-            let html = '';
-
-            // Manipulación pura de DOM 
-            if (res.perfiles && res.perfiles.length > 0) {
-                res.perfiles.forEach(p => {
-                    html += `
-                        <tr>
-                            <td>${p.id}</td>
-                            <td>${p.strNombrePerfil}</td>
-                            <td>${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}</td>
-                            <td class="text-center">
-                                <button class="btn btn-danger btn-sm" onclick="borrarPerfil(${p.id})">Borrar</button>
-                            </td>
-                        </tr>`;
-                });
-            } else {
-                html = '<tr><td colspan="4" class="text-center">Tabla vacía</td></tr>';
-            }
+            let filas = '';
+            data.perfiles.forEach(p => {
+                filas += `<tr>
+                    <td>${p.id}</td>
+                    <td>${p.strNombrePerfil}</td>
+                    <td>${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-danger" onclick="borrar(${p.id})">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = filas || '<tr><td colspan="4">No hay datos</td></tr>';
             
-            tabla.innerHTML = html;
-
-            if (paginador && res.pager) {
-                paginador.innerHTML = res.pager;
-                paginador.querySelectorAll('a').forEach(link => {
-                    link.onclick = (e) => { 
-                        e.preventDefault(); 
-                        const url = new URL(link.href);
-                        cargarPerfiles(url.searchParams.get('page')); 
-                    };
-                });
-            }
-        } catch (err) {
-            console.error("Fallo de Fetch:", err);
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de datos</td></tr>';
+            // Inyectamos paginación de 5 filas 
+            const pag = document.getElementById('paginacionContainer');
+            if (pag) pag.innerHTML = data.pager || '';
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="4">Error al procesar JSON</td></tr>';
         }
     }
-
-    // Botones globales
-    window.borrarPerfil = async (id) => {
-        if (!confirm("¿Borrar?")) return;
-        const res = await fetch(`${API_URL}/eliminar/${id}`, { method: 'DELETE' });
-        if (res.ok) cargarPerfiles();
-    };
-
-    const form = document.getElementById('formPerfil');
-    if (form) {
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const res = await fetch(`${API_URL}/crear`, { method: 'POST', body: new FormData(e.target) });
-            if (res.ok && bsModal) { bsModal.hide(); cargarPerfiles(); }
-        };
-    }
-
-    // Despierta la función
-    cargarPerfiles();
+    cargarTabla();
 })();
 </script>

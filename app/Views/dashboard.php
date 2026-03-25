@@ -109,31 +109,27 @@
         });
     } catch (error) { console.error("Error:", error); }
 }
-
-async function cargarModulo(nombre) {
+    async function cargarModulo(nombre) {
     const contenedor = document.getElementById('mainWrapper');
-    const urlSlug = nombre.toLowerCase().replace(/\s+/g, '-'); 
+    const slug = nombre.toLowerCase().replace(/\s+/g, '-'); 
     
     try {
-        // Usamos la URL absoluta directa a tu servidor Railway
-        const res = await fetch(`https://proyectofinal-production-e9e1.up.railway.app/index.php/${urlSlug}/vista`);
+        const res = await fetch(`https://proyectofinal-production-e9e1.up.railway.app/index.php/${slug}/vista`);
         const html = await res.text();
         
-        // 1. Inyectamos la vista
+        // Inyectamos el HTML de la tabla 
         contenedor.innerHTML = html;
         
-        // 2. Extraemos y forzamos la ejecución de los scripts de forma limpia
-        const scripts = contenedor.getElementsByTagName('script');
-        for (let i = 0; i < scripts.length; i++) {
-            try {
-                // textContent ignora etiquetas HTML fantasma
-                window.eval(scripts[i].textContent);
-            } catch (errScript) {
-                console.error("Error aislando el script:", errScript);
-            }
-        }
+        // Ejecutamos los scripts manualmente para que el Fetch funcione
+        const scripts = contenedor.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            newScript.text = oldScript.innerText;
+            document.body.appendChild(newScript);
+            document.body.removeChild(newScript); // Limpieza inmediata
+        });
     } catch (e) {
-        contenedor.innerHTML = '<div class="alert alert-danger">Fallo al traer la vista del módulo</div>';
+        contenedor.innerHTML = '<div class="alert alert-danger">Error de red al cargar</div>';
     }
 }
 </script>

@@ -10,12 +10,14 @@ class Perfil extends BaseController {
         return view('modulos/perfil_view');
     }
 
-    public function index() {
+   public function index() {
     $model = new \App\Models\PerfilModel();
+    // Requisito: Paginado para 5 filas 
     $data = [
-        'perfiles' => $model->paginate(5), // Requisito: 5 filas 
+        'perfiles' => $model->paginate(5), 
         'pager'    => $model->pager->links()
     ];
+    // Asegura que no se envíe nada más que el JSON 
     return $this->response->setJSON($data);
 }
     public function crear() {
