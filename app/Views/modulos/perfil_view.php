@@ -51,24 +51,27 @@
     </div>
 </div>
 <script>
-<script>
 (function() {
-    // Forzamos la URL de tu servidor en Railway para evitar el error de consola 
-    const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/perfil";
+    // 100% URL Absoluta, sin PHP que lo rompa
+    const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
     const modalEl = document.getElementById('modalPerfil');
-    const bsModal = new bootstrap.Modal(modalEl);
+    // Verificamos si existe el modal antes de inicializarlo para evitar errores
+    const bsModal = modalEl ? new bootstrap.Modal(modalEl) : null;
 
     async function cargarPerfiles(pagina = 1) {
         const tabla = document.getElementById('tablaPerfiles');
         const paginador = document.getElementById('paginacionContainer');
 
-        try {
-            // Requisito: Uso de Fetch API 
-            const response = await fetch(`${API_URL}?page=${pagina}`);
-            const res = await response.json();
+        if (!tabla) return; // Si no hay tabla, abortamos silenciosamente
 
+        try {
+            const response = await fetch(`${API_URL}?page=${pagina}`);
+            if (!response.ok) throw new Error("Servidor no responde");
+            
+            const res = await response.json();
             let html = '';
-            // Manipulación de objetos DOM para renderizar 
+
+            // Manipulación pura de DOM 
             if (res.perfiles && res.perfiles.length > 0) {
                 res.perfiles.forEach(p => {
                     html += `
@@ -77,50 +80,49 @@
                             <td>${p.strNombrePerfil}</td>
                             <td>${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}</td>
                             <td class="text-center">
-                                <button class="btn btn-danger btn-sm" onclick="borrarPerfil(${p.id})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="borrarPerfil(${p.id})">Borrar</button>
                             </td>
                         </tr>`;
                 });
             } else {
-                html = '<tr><td colspan="4" class="text-center">No hay registros</td></tr>';
+                html = '<tr><td colspan="4" class="text-center">Tabla vacía</td></tr>';
             }
             
             tabla.innerHTML = html;
-            if (paginador) paginador.innerHTML = res.pager || '';
 
-            // Hacer que los links de la paginación no recarguen la página (SPA Style)
-            document.querySelectorAll('#paginacionContainer a').forEach(link => {
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    const url = new URL(link.href);
-                    cargarPerfiles(url.searchParams.get('page'));
-                };
-            });
-
+            if (paginador && res.pager) {
+                paginador.innerHTML = res.pager;
+                paginador.querySelectorAll('a').forEach(link => {
+                    link.onclick = (e) => { 
+                        e.preventDefault(); 
+                        const url = new URL(link.href);
+                        cargarPerfiles(url.searchParams.get('page')); 
+                    };
+                });
+            }
         } catch (err) {
-            console.error("Fallo técnico:", err);
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al conectar con Railway</td></tr>';
+            console.error("Fallo de Fetch:", err);
+            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de datos</td></tr>';
         }
     }
 
-    // Funciones globales para botones
+    // Botones globales
     window.borrarPerfil = async (id) => {
-        if (!confirm("¿Eliminar?")) return;
+        if (!confirm("¿Borrar?")) return;
         const res = await fetch(`${API_URL}/eliminar/${id}`, { method: 'DELETE' });
         if (res.ok) cargarPerfiles();
     };
 
-    document.getElementById('formPerfil').onsubmit = async (e) => {
-        e.preventDefault();
-        const res = await fetch(`${API_URL}/crear`, {
-            method: 'POST',
-            body: new FormData(e.target)
-        });
-        if (res.ok) { bsModal.hide(); cargarPerfiles(); }
-    };
+    const form = document.getElementById('formPerfil');
+    if (form) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await fetch(`${API_URL}/crear`, { method: 'POST', body: new FormData(e.target) });
+            if (res.ok && bsModal) { bsModal.hide(); cargarPerfiles(); }
+        };
+    }
 
+    // Despierta la función
     cargarPerfiles();
 })();
 </script>

@@ -110,39 +110,30 @@
     } catch (error) { console.error("Error:", error); }
 }
 
-// NUEVA FUNCIÓN: Esta es la que hace la magia
 async function cargarModulo(nombre) {
     const contenedor = document.getElementById('mainWrapper');
     const urlSlug = nombre.toLowerCase().replace(/\s+/g, '-'); 
     
     try {
-        // 1. Pedimos la VISTA (el HTML de la tabla)
-        // OJO: Le puse index.php para asegurar que Railway no falle
-        const res = await fetch(`<?= base_url('index.php') ?>/${urlSlug}/vista`);
+        // Usamos la URL absoluta directa a tu servidor Railway
+        const res = await fetch(`https://proyectofinal-production-e9e1.up.railway.app/index.php/${urlSlug}/vista`);
         const html = await res.text();
         
-        // 2. Inyectamos el HTML al contenedor
+        // 1. Inyectamos la vista
         contenedor.innerHTML = html;
         
-        // 3. EL TRUCO VITAL: Extraer y ejecutar los scripts manualmente
+        // 2. Extraemos y forzamos la ejecución de los scripts de forma limpia
         const scripts = contenedor.getElementsByTagName('script');
         for (let i = 0; i < scripts.length; i++) {
-            const scriptOriginal = scripts[i];
-            const scriptNuevo = document.createElement('script');
-            
-            // Copiamos el contenido del script
-            scriptNuevo.text = scriptOriginal.innerText;
-            
-            // Lo agregamos al body para que el navegador lo ejecute
-            document.body.appendChild(scriptNuevo);
-            
-            // Lo removemos para no ensuciar el código (ya se ejecutó)
-            document.body.removeChild(scriptNuevo);
+            try {
+                // textContent ignora etiquetas HTML fantasma
+                window.eval(scripts[i].textContent);
+            } catch (errScript) {
+                console.error("Error aislando el script:", errScript);
+            }
         }
-
     } catch (e) {
-        console.error("Error al inyectar módulo:", e);
-        contenedor.innerHTML = '<div class="alert alert-danger">Error al cargar módulo</div>';
+        contenedor.innerHTML = '<div class="alert alert-danger">Fallo al traer la vista del módulo</div>';
     }
 }
 </script>
