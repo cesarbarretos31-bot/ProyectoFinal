@@ -51,8 +51,9 @@
     </div>
 </div>
 <script>
+<script>
 (function() {
-    // Definimos la URL de Railway explícitamente para evitar el ERR_NAME_NOT_RESOLVED
+    // Forzamos la URL de tu servidor en Railway para evitar el error de consola 
     const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
     const modalEl = document.getElementById('modalPerfil');
     const bsModal = new bootstrap.Modal(modalEl);
@@ -64,23 +65,17 @@
         try {
             // Requisito: Uso de Fetch API 
             const response = await fetch(`${API_URL}?page=${pagina}`);
-            if (!response.ok) throw new Error("Fallo en servidor");
-            
             const res = await response.json();
-            let html = '';
 
-            // Manipulación de Objetos DOM para llenar la tabla 
+            let html = '';
+            // Manipulación de objetos DOM para renderizar 
             if (res.perfiles && res.perfiles.length > 0) {
                 res.perfiles.forEach(p => {
                     html += `
                         <tr>
                             <td>${p.id}</td>
                             <td>${p.strNombrePerfil}</td>
-                            <td>
-                                <span class="badge ${p.bitAdministrador == '1' ? 'bg-success' : 'bg-secondary'}">
-                                    ${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}
-                                </span>
-                            </td>
+                            <td>${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}</td>
                             <td class="text-center">
                                 <button class="btn btn-danger btn-sm" onclick="borrarPerfil(${p.id})">
                                     <i class="bi bi-trash"></i>
@@ -89,35 +84,30 @@
                         </tr>`;
                 });
             } else {
-                html = '<tr><td colspan="4" class="text-center">Sin registros</td></tr>';
+                html = '<tr><td colspan="4" class="text-center">No hay registros</td></tr>';
             }
             
             tabla.innerHTML = html;
+            if (paginador) paginador.innerHTML = res.pager || '';
 
-            // Inyectar paginación y capturar clics para evitar recarga de página
-            if (paginador && res.pager) {
-                paginador.innerHTML = res.pager;
-                paginador.querySelectorAll('a').forEach(link => {
-                    const urlParams = new URLSearchParams(new URL(link.href).search);
-                    const p = urlParams.get('page') || 1;
-                    link.onclick = (e) => { e.preventDefault(); cargarPerfiles(p); };
-                    link.href = "#";
-                });
-            }
+            // Hacer que los links de la paginación no recarguen la página (SPA Style)
+            document.querySelectorAll('#paginacionContainer a').forEach(link => {
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    const url = new URL(link.href);
+                    cargarPerfiles(url.searchParams.get('page'));
+                };
+            });
+
         } catch (err) {
-            console.error("Error crítico:", err);
-            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error de conexión</td></tr>';
+            console.error("Fallo técnico:", err);
+            tabla.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al conectar con Railway</td></tr>';
         }
     }
 
     // Funciones globales para botones
-    window.abrirModalNuevo = () => {
-        document.getElementById('formPerfil').reset();
-        bsModal.show();
-    };
-
     window.borrarPerfil = async (id) => {
-        if (!confirm("¿Eliminar perfil?")) return;
+        if (!confirm("¿Eliminar?")) return;
         const res = await fetch(`${API_URL}/eliminar/${id}`, { method: 'DELETE' });
         if (res.ok) cargarPerfiles();
     };
@@ -131,7 +121,6 @@
         if (res.ok) { bsModal.hide(); cargarPerfiles(); }
     };
 
-    // Carga inicial
     cargarPerfiles();
 })();
 </script>

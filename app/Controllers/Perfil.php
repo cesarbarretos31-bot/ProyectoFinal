@@ -12,9 +12,8 @@ class Perfil extends BaseController {
 
     public function index() {
     $model = new \App\Models\PerfilModel();
-    // Requisito estricto del proyecto: 5 filas por página 
     $data = [
-        'perfiles' => $model->paginate(5),
+        'perfiles' => $model->paginate(5), // Requisito: 5 filas 
         'pager'    => $model->pager->links()
     ];
     return $this->response->setJSON($data);
