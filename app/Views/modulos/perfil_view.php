@@ -54,7 +54,7 @@
 <script>
 (function() {
     // Forzamos la URL de tu servidor en Railway para evitar el error de consola 
-    const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
+    const API_URL = "https://proyectofinal-production-e9e1.up.railway.app/perfil";
     const modalEl = document.getElementById('modalPerfil');
     const bsModal = new bootstrap.Modal(modalEl);
 
