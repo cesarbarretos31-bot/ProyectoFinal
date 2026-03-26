@@ -12,13 +12,15 @@ class Perfil extends BaseController {
 
    public function index() {
     $model = new \App\Models\PerfilModel();
-    // Requisito: Paginado para 5 filas 
     $data = [
         'perfiles' => $model->paginate(5), 
         'pager'    => $model->pager->links()
     ];
-    // Asegura que no se envíe nada más que el JSON 
-    return $this->response->setJSON($data);
+
+    return $this->response
+        ->setJSON($data)
+        ->setHeader('Cache-Control', 'no-store, max-age=0, no-cache') // Control explícito
+        ->setHeader('Pragma', 'no-cache');
 }
     public function crear() {
         $model = new PerfilModel();
