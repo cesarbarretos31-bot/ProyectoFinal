@@ -6,7 +6,7 @@ use App\Models\PerfilModel;
 class Perfiles extends BaseController {
     
     public function vista() {
-        return view('modulos/perfiles_view');
+        return view('modulos/perfil_view');
     }
 
     public function listar() {
