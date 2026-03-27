@@ -1,86 +1,76 @@
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#">Seguridad</a></li>
-        <li class="breadcrumb-item active">Perfil</li>
-    </ol>
-</nav>
-
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0 fw-bold">Gestión de Perfiles</h5>
-        <button class="btn btn-primary btn-sm" onclick="abrirModal()">Nuevo Perfil</button>
-    </div>
-    <div class="card-body">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre Perfil</th>
-                    <th>Admin</th>
-                    <th class="text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaPerfiles">
-                <tr><td colspan="4" class="text-center">Cargando...</td></tr>
-            </tbody>
-        </table>
-        <div id="paginacionContainer" class="d-flex justify-content-center"></div>
-    </div>
+<div class="input-group mb-3">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="text" id="txtBuscar" class="form-control" placeholder="Buscar perfil..." onkeyup="buscarTiempoReal()">
 </div>
 
-<div class="modal fade" id="modalPerfil" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Registrar Perfil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="formPerfil">
-                <div class="modal-body">
-                    <input type="text" name="strNombrePerfil" class="form-control mb-3" placeholder="Nombre" required>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="bitAdministrador" value="1">
-                        <label class="form-check-label">¿Es Administrador?</label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<table class="table align-middle">
+    <thead class="bg-light">
+        <tr>
+            <th>#</th>
+            <th>Nombre Perfil</th>
+            <th>Admin</th>
+            <th class="text-end">Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="tabla-cuerpo"></tbody>
+</table>
+<div id="paginacion-info" class="text-center"></div>
 
 <script>
-(function() {
-    const URL_API = "https://proyectofinal-production-e9e1.up.railway.app/index.php/perfil";
+let timeoutBusqueda;
+let paginaActual = 1;
 
-    async function cargarTabla(p = 1) {
-        const tbody = document.getElementById('tablaPerfiles');
-        try {
-            const res = await fetch(`${URL_API}?page=${p}`); [cite: 36]
-            const data = await res.json();
-            
-            let filas = '';
-            data.perfiles.forEach(p => {
-                filas += `<tr>
-                    <td>${p.id}</td>
-                    <td>${p.strNombrePerfil}</td>
-                    <td>${p.bitAdministrador == '1' ? 'SÍ' : 'NO'}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-danger" onclick="borrar(${p.id})">Eliminar</button>
-                    </td>
-                </tr>`;
-            });
-            tbody.innerHTML = filas || '<tr><td colspan="4">No hay datos</td></tr>';
-            
-            // Inyectamos paginación de 5 filas 
-            const pag = document.getElementById('paginacionContainer');
-            if (pag) pag.innerHTML = data.pager || '';
-        } catch (e) {
-            tbody.innerHTML = '<tr><td colspan="4">Error al procesar JSON</td></tr>';
-        }
-    }
-    cargarTabla();
-})();
+// 1. FILTRO DE BÚSQUEDA EN TIEMPO REAL
+function buscarTiempoReal() {
+    clearTimeout(timeoutBusqueda);
+    timeoutBusqueda = setTimeout(() => {
+        paginaActual = 1; // Reiniciar a la primera página al buscar
+        obtenerDatos();
+    }, 500); // Espera 500ms tras dejar de escribir
+}
+
+// 2. LEER (READ) con Fetch API
+async function obtenerDatos() {
+    const buscar = document.getElementById('txtBuscar').value;
+    const res = await fetch(`<?= base_url('perfiles/listar') ?>?page=${paginaActual}&search=${buscar}`);
+    const json = await res.json();
+    
+    renderizarTabla(json.data);
+    renderizarPaginador(json.pager);
+}
+
+function renderizarTabla(datos) {
+    const tbody = document.getElementById('tabla-cuerpo');
+    tbody.innerHTML = datos.map(p => `
+        <tr>
+            <td>${p.id}</td>
+            <td class="fw-bold">${p.strNombrePerfil}</td>
+            <td><span class="badge ${p.bitAdministrador == 1 ? 'bg-primary' : 'bg-secondary'}">
+                ${p.bitAdministrador == 1 ? 'Sí' : 'No'}</span></td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-link text-warning" onclick="editarPerfil(${p.id}, '${p.strNombrePerfil}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-link text-danger" onclick="eliminarPerfil(${p.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// 3. ELIMINAR (DELETE)
+async function eliminarPerfil(id) {
+    if (!confirm('¿Desea eliminar este registro?')) return;
+    
+    const res = await fetch(`<?= base_url('perfiles/eliminar') ?>/${id}`, { method: 'DELETE' });
+    const json = await res.json();
+    if (json.status === 'success') obtenerDatos();
+}
+
+// 4. PAGINACIÓN DINÁMICA
+function renderizarPaginador(pager) {
+    const pContainer = document.getElementById('paginacion-info');
+    pContainer.innerHTML = `Página ${pager.current} de ${pager.total} (Total: ${pager.totalRows} registros)`;
+    // Aquí puedes añadir botones de "Anterior" y "Siguiente" que cambien la variable paginaActual
+}
+
+// Carga inicial
+obtenerDatos();
 </script>
