@@ -16,7 +16,7 @@ $routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
 $routes->get('menu/obtenerMenu', 'Menu::obtenerMenu');
 
 // Módulo Perfil (¡OJO AQUÍ!)
-$routes->get('perfil', 'Perfil::index');        // Retorna el JSON
-$routes->get('perfil/vista', 'Perfil::vista');  // Retorna el HTML
-$routes->post('perfil/crear', 'Perfil::crear');
-$routes->delete('perfil/eliminar/(:num)', 'Perfil::eliminar/$1');
+
+
+// Ruta para cargar la vista del módulo perfil
+$routes->get('perfil/vista', 'Perfil::vista');
