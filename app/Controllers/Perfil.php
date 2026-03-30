@@ -3,7 +3,7 @@
 namespace App\Controllers;
 use App\Models\PerfilModel;
 
-class Perfiles extends BaseController {
+class Perfil extends BaseController {
     
     public function vista() {
         return view('modulos/perfil_view');
