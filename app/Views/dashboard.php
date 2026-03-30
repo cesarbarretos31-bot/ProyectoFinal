@@ -70,7 +70,7 @@
             <div class="card p-5 text-center shadow-sm border-0 mt-4 fade-in">
                 <div class="card-body py-5">
                     <i class="bi bi-speedometer2 text-primary mb-3" style="font-size: 4rem;"></i>
-                 <h2 class="fw-bold text-dark">¡Bienvenido, <?= explode(' ', $nombre) ?>!</h2>
+                       <h2 class="fw-bold text-dark">¡Bienvenido, <?= $nombre ?>!</h2>
                     <p class="text-muted lead">Selecciona un módulo del menú lateral para comenzar a gestionar la información.</p>
                 </div>
             </div>
