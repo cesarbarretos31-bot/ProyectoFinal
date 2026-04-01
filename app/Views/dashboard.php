@@ -70,7 +70,7 @@
             <div class="card p-5 text-center shadow-sm border-0 mt-4 fade-in">
                 <div class="card-body py-5">
                     <i class="bi bi-speedometer2 text-primary mb-3" style="font-size: 4rem;"></i>
-                       <h2 class="fw-bold text-dark">¡Bienvenido, <?= $nombre ?>!</h2>
+                    <h2 class="fw-bold text-dark">¡Bienvenido, <?= $nombre ?>!</h2>
                     <p class="text-muted lead">Selecciona un módulo del menú lateral para comenzar a gestionar la información.</p>
                 </div>
             </div>
@@ -97,7 +97,6 @@
             sidebar.innerHTML = ''; 
 
             datos.forEach(p => {
-                // Aquí mantengo tu lógica original, inyectando los items.
                 sidebar.innerHTML += `
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center module-link" href="javascript:void(0)" 
@@ -110,37 +109,64 @@
         } catch (error) { console.error("Error al cargar menú:", error); }
     }
 
-    async function cargarModulo(url, nombreModulo) {
-    const mainWrapper = document.getElementById('mainWrapper');
-    
-    // 1. Mostrar estado de carga
-    mainWrapper.innerHTML = `
-        <div class="text-center p-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2">Cargando ${nombreModulo}...</p>
-        </div>`;
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+    async function cargarModulo(nombreModulo, elementoMenu) {
+        const mainWrapper = document.getElementById('mainWrapper');
+        const breadcrumbArea = document.getElementById('breadcrumbArea');
         
-        const html = await response.text();
-        
-        // 2. Insertar el contenido directamente sin usar removeChild
-        mainWrapper.innerHTML = html;
+        // 1. Resaltar el menú seleccionado
+        document.querySelectorAll('.module-link').forEach(el => el.classList.remove('active'));
+        if(elementoMenu) elementoMenu.classList.add('active');
 
-        // 3. Actualizar el Breadcrumb (opcional pero recomendado)
-        const breadcrumb = document.querySelector('.breadcrumb-item.active');
-        if (breadcrumb) breadcrumb.textContent = nombreModulo;
+        // 2. Actualizar el Breadcrumb
+        breadcrumbArea.innerHTML = `
+            <li class="breadcrumb-item"><a href="javascript:void(0)" onclick="location.reload()" class="text-decoration-none">Inicio</a></li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">${nombreModulo}</li>
+        `;
 
-    } catch (error) {
-        console.error('Error cargando vista:', error);
+        // 3. Crear la URL automáticamente (ej. "Perfil" -> "perfil/vista")
+        const slug = nombreModulo.toLowerCase().replace(/\s+/g, '-');
+        const urlFetch = `<?= base_url() ?>/${slug}/vista`;
+
+        // 4. Pantalla de carga
         mainWrapper.innerHTML = `
-            <div class="alert alert-danger m-4">
-                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Error de conexión</h4>
-                <p>No se pudo cargar el módulo <b>${nombreModulo}</b>.</p>
-                <hr>
-                <p class="mb-0">Verifica que la URL <u>${url}</u> sea accesible.</p>
+            <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Cargando ${nombreModulo}...</p>
             </div>`;
+
+        try {
+            const response = await fetch(urlFetch);
+            if (!response.ok) throw new Error(`Error ${response.status} en el servidor`);
+            
+            const html = await response.text();
+            
+            // 5. Inyectar HTML
+            mainWrapper.innerHTML = html;
+
+            // 6. TRUCO DE MAGIA: Ejecutar los scripts internos del módulo
+            const scripts = mainWrapper.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                if (oldScript.src) {
+                    newScript.src = oldScript.src;
+                } else {
+                    newScript.text = oldScript.innerText;
+                }
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript); // Se ejecuta y se limpia al instante
+            });
+
+        } catch (error) {
+            console.error('Error cargando vista:', error);
+            mainWrapper.innerHTML = `
+                <div class="alert alert-danger m-4 shadow-sm border-0">
+                    <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Error de carga</h5>
+                    <p>No se pudo cargar el módulo <b>${nombreModulo}</b>.</p>
+                    <hr>
+                    <p class="mb-0 text-muted" style="font-size: 0.9rem;">Ruta intentada: <code>${urlFetch}</code></p>
+                </div>`;
+        }
     }
-}
+</script>
+</body>
+</html>
