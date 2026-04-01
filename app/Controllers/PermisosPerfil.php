@@ -8,7 +8,8 @@ class PermisosPerfil extends BaseController {
     use ResponseTrait;
 
     public function vista() {
-        return view('modulos/permisosperfil_view');
+        $permisos = $this->getPermisosModulo('Permisos Perfil');
+        return view('modulos/permisosperfil_view', ['permisos' => $permisos]);
     }
 
     public function mostrar($idPerfil) {

@@ -4,7 +4,9 @@
             <h4 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i> Gestión de Usuarios</h4>
             <input id="txtBuscarUsuario" type="search" class="form-control form-control-sm" style="width: 250px;" placeholder="Buscar usuario..." onkeyup="appUsuario.buscar()">
         </div>
+        <?php if ($permisos['bitAgregar']): ?>
         <button class="btn btn-primary btn-sm" onclick="appUsuario.prepararNuevo()">+ Nuevo Usuario</button>
+        <?php endif; ?>
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -127,7 +129,14 @@ window.appUsuario = {
         }
 
         usuarios.forEach(u => {
-            tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.strNombreUsuario}</td><td>${u.perfil||'--'}</td><td>${u.idEstado==1 ? 'Activo' : 'Inactivo'}</td><td class="text-end"><button class="btn btn-sm btn-warning me-1" onclick="appUsuario.editar(${u.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="appUsuario.eliminar(${u.id})">Eliminar</button></td></tr>`;
+            tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.strNombreUsuario}</td><td>${u.perfil||'--'}</td><td>${u.idEstado==1 ? 'Activo' : 'Inactivo'}</td><td class="text-end">
+            <?php if ($permisos['bitEditar']): ?>
+            <button class="btn btn-sm btn-warning me-1" onclick="appUsuario.editar(${u.id})">Editar</button>
+            <?php endif; ?>
+            <?php if ($permisos['bitEliminar']): ?>
+            <button class="btn btn-sm btn-danger" onclick="appUsuario.eliminar(${u.id})">Eliminar</button>
+            <?php endif; ?>
+            </td></tr>`;
         });
 
         this.paginacionUsuarios(res.pager);
@@ -241,4 +250,15 @@ window.appUsuario = {
 };
 
 window.moduleInit = window.moduleInit || function() { if(window.appUsuario) window.appUsuario.init(); };
+</script>
+
+<script>
+// Permisos del usuario actual para este módulo
+window.permisosUsuario = {
+    bitConsulta: <?= $permisos['bitConsulta'] ?>,
+    bitAgregar: <?= $permisos['bitAgregar'] ?>,
+    bitEditar: <?= $permisos['bitEditar'] ?>,
+    bitEliminar: <?= $permisos['bitEliminar'] ?>,
+    bitDetalle: <?= $permisos['bitDetalle'] ?>
+};
 </script>

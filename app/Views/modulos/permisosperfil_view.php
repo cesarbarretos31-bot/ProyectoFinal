@@ -1,7 +1,9 @@
 <div class="container-fluid py-4 fade-in">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0"><i class="bi bi-shield-lock-fill text-primary me-2"></i> Matriz de Permisos</h4>
+        <?php if ($permisos['bitEditar']): ?>
         <button class="btn btn-primary btn-sm" onclick="appPermisos.guardarMatriz()">Guardar Matriz de Permisos</button>
+        <?php endif; ?>
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -250,4 +252,15 @@ window.appPermisos = {
 };
 
 window.moduleInit = window.moduleInit || function() { if(window.appPermisos) window.appPermisos.init(); };
+</script>
+
+<script>
+// Permisos del usuario actual para este módulo
+window.permisosPermisosPerfil = {
+    bitConsulta: <?= $permisos['bitConsulta'] ?>,
+    bitAgregar: <?= $permisos['bitAgregar'] ?>,
+    bitEditar: <?= $permisos['bitEditar'] ?>,
+    bitEliminar: <?= $permisos['bitEliminar'] ?>,
+    bitDetalle: <?= $permisos['bitDetalle'] ?>
+};
 </script>

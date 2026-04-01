@@ -11,7 +11,8 @@ class Modulo extends BaseController
 
     public function vista()
     {
-        return view('modulos/modulo_view');
+        $permisos = $this->getPermisosModulo('Módulo');
+        return view('modulos/modulo_view', ['permisos' => $permisos]);
     }
 
     public function listar()

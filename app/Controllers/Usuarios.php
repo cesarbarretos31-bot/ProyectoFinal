@@ -9,7 +9,8 @@ class Usuarios extends BaseController {
 
     public function vista()
     {
-        return view('modulos/usuario_view');
+        $permisos = $this->getPermisosModulo('Usuario');
+        return view('modulos/usuario_view', ['permisos' => $permisos]);
     }
 
     public function listar()

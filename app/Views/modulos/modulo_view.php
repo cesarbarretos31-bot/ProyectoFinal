@@ -1,14 +1,12 @@
 <div class="container-fluid py-4 fade-in">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
+        <div class="d-flex align-items-center gap-2">
             <h4 class="fw-bold mb-0"><i class="bi bi-layers text-primary me-2"></i> Gestión de Módulos</h4>
-            <small class="text-muted" id="modulo-total-registros">Cargando...</small>
+            <input id="txtBuscarModulo" type="search" class="form-control form-control-sm" style="width: 250px;" placeholder="Buscar módulo..." onkeyup="appModulo.buscar()">
         </div>
-        <div class="input-group w-50">
-            <input id="txtBuscarModulo" type="text" class="form-control" placeholder="Buscar módulo..." onkeyup="appModulo.buscar()">
-            <button class="btn btn-outline-secondary" type="button" onclick="appModulo.buscar()">Buscar</button>
-        </div>
+        <?php if ($permisos['bitAgregar']): ?>
         <button class="btn btn-primary btn-sm" onclick="appModulo.prepararNuevo()">+ Nuevo Módulo</button>
+        <?php endif; ?>
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -86,7 +84,14 @@ window.appModulo = {
             }
 
             datos.forEach(item => {
-                tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.strNombreModulo}</td><td class="text-end"><button class="btn btn-sm btn-warning me-1" onclick="appModulo.editar(${item.id}, '${item.strNombreModulo}')">Editar</button><button class="btn btn-sm btn-danger" onclick="appModulo.eliminar(${item.id})">Eliminar</button></td></tr>`;
+                tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.strNombreModulo}</td><td class="text-end">
+                <?php if ($permisos['bitEditar']): ?>
+                <button class="btn btn-sm btn-warning me-1" onclick="appModulo.editar(${item.id}, '${item.strNombreModulo}')">Editar</button>
+                <?php endif; ?>
+                <?php if ($permisos['bitEliminar']): ?>
+                <button class="btn btn-sm btn-danger" onclick="appModulo.eliminar(${item.id})">Eliminar</button>
+                <?php endif; ?>
+                </td></tr>`;
             });
 
             document.getElementById('modulo-total-registros').textContent = `${res.pager.totalRows} registros`;
@@ -192,4 +197,15 @@ window.appModulo = {
 };
 
 window.moduleInit = window.moduleInit || function() { if(window.appModulo) window.appModulo.init(); };
+</script>
+
+<script>
+// Permisos del usuario actual para este módulo
+window.permisosModulo = {
+    bitConsulta: <?= $permisos['bitConsulta'] ?>,
+    bitAgregar: <?= $permisos['bitAgregar'] ?>,
+    bitEditar: <?= $permisos['bitEditar'] ?>,
+    bitEliminar: <?= $permisos['bitEliminar'] ?>,
+    bitDetalle: <?= $permisos['bitDetalle'] ?>
+};
 </script>

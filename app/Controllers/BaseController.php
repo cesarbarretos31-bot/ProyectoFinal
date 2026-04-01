@@ -42,4 +42,56 @@ abstract class BaseController extends Controller
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
     }
+
+    /**
+     * Obtiene los permisos del usuario actual para un módulo específico
+     */
+    protected function getPermisosModulo($nombreModulo)
+    {
+        $session = session();
+        $idPerfil = $session->get('idPerfil');
+
+        if (!$idPerfil) {
+            return [
+                'bitConsulta' => 0,
+                'bitAgregar' => 0,
+                'bitEditar' => 0,
+                'bitEliminar' => 0,
+                'bitDetalle' => 0
+            ];
+        }
+
+        $db = \Config\Database::connect();
+        $sql = "SELECT
+                    p.bitConsulta,
+                    p.bitAgregar,
+                    p.bitEditar,
+                    p.bitEliminar,
+                    p.bitDetalle
+                FROM PermisosPerfil p
+                JOIN Modulo m ON m.id = p.idModulo
+                WHERE p.idPerfil = ? AND m.strNombreModulo = ?
+                LIMIT 1";
+
+        $query = $db->query($sql, [$idPerfil, $nombreModulo]);
+        $permiso = $query->getRow();
+
+        if ($permiso) {
+            return [
+                'bitConsulta' => (int) $permiso->bitConsulta,
+                'bitAgregar' => (int) $permiso->bitAgregar,
+                'bitEditar' => (int) $permiso->bitEditar,
+                'bitEliminar' => (int) $permiso->bitEliminar,
+                'bitDetalle' => (int) $permiso->bitDetalle
+            ];
+        }
+
+        return [
+            'bitConsulta' => 0,
+            'bitAgregar' => 0,
+            'bitEditar' => 0,
+            'bitEliminar' => 0,
+            'bitDetalle' => 0
+        ];
+    }
 }

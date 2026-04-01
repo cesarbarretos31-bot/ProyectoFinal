@@ -4,9 +4,11 @@
             <h4 class="fw-bold mb-0"><i class="bi bi-shield-lock text-primary me-2"></i> Gestión de Perfiles</h4>
             <small class="text-muted" id="total-registros">Cargando...</small>
         </div>
+        <?php if ($permisos['bitAgregar']): ?>
         <button class="btn btn-primary btn-sm shadow-sm" onclick="appPerfil.prepararNuevo()">
             <i class="bi bi-plus-lg"></i> + Nuevo Perfil
         </button>
+        <?php endif; ?>
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -115,8 +117,12 @@ window.appPerfil = {
                             <td class="fw-bold">${p.strNombrePerfil}</td>
                             <td>${p.bitAdministrador == 1 ? '<span class="badge bg-success-subtle text-success border">Sí</span>' : '<span class="badge bg-light text-muted border">No</span>'}</td>
                             <td class="text-end">
+                                <?php if ($permisos['bitEditar']): ?>
                                 <button class="btn btn-link text-warning p-1" onclick="appPerfil.prepararEditar(${p.id}, '${p.strNombrePerfil}', ${p.bitAdministrador})"><i class="bi bi-pencil"></i></button>
+                                <?php endif; ?>
+                                <?php if ($permisos['bitEliminar']): ?>
                                 <button class="btn btn-link text-danger p-1" onclick="appPerfil.eliminar(${p.id})"><i class="bi bi-trash"></i></button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     `;
@@ -230,4 +236,15 @@ window.appPerfil = {
 
 // Arrancar la aplicación de Perfil
 window.appPerfil.init();
+</script>
+
+<script>
+// Permisos del usuario actual para este módulo
+window.permisosPerfil = {
+    bitConsulta: <?= $permisos['bitConsulta'] ?>,
+    bitAgregar: <?= $permisos['bitAgregar'] ?>,
+    bitEditar: <?= $permisos['bitEditar'] ?>,
+    bitEliminar: <?= $permisos['bitEliminar'] ?>,
+    bitDetalle: <?= $permisos['bitDetalle'] ?>
+};
 </script>

@@ -11,7 +11,8 @@ class Perfil extends BaseController
 
     public function vista()
     {
-        return view('modulos/perfil_view');
+        $permisos = $this->getPermisosModulo('Perfil');
+        return view('modulos/perfil_view', ['permisos' => $permisos]);
     }
 
     public function listar()
