@@ -4,9 +4,6 @@
         <div class="d-flex align-items-center gap-3">
             <button id="btnGuardarMatriz" class="btn btn-primary btn-sm" onclick="appPermisos.guardarMatriz()" <?= $permisos['bitEditar'] ? '' : 'disabled' ?>>Guardar Matriz de Permisos</button>
             <span id="permisosMensaje" class="small text-success"></span>
-            <?php if (!$permisos['bitEditar']): ?>
-            <small class="text-muted">(Solo lectura porque no tiene permiso de editar)</small>
-            <?php endif; ?>
         </div>
     </div>
 
@@ -224,11 +221,6 @@ window.appPermisos = {
 
         if (!this.idPerfilActual) {
             alert('Seleccione primero un perfil');
-            return;
-        }
-
-        if (!<?= $permisos['bitEditar'] ? 'true' : 'false' ?>) {
-            alert('No tienes permiso para editar esta matriz.');
             return;
         }
 

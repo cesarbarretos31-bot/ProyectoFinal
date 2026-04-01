@@ -17,67 +17,7 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4">
-                        <!-- Panel de Información -->
-                        <div class="col-lg-8">
-                            <div class="card border-0 bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title text-primary mb-3">
-                                        <i class="bi bi-info-circle-fill me-2"></i>Información del Módulo
-                                    </h6>
-                                    <p class="card-text text-muted mb-3">
-                                        Este módulo está diseñado para gestionar información específica del sistema.
-                                        Aquí puedes realizar operaciones relacionadas con <?= strtolower($titulo) ?>.
-                                    </p>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                <span class="small">Módulo activo</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-shield-check text-primary me-2"></i>
-                                                <span class="small">Acceso autorizado</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Panel de Acciones Rápidas -->
-                        <div class="col-lg-4">
-                            <div class="card border-0">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0 text-primary">
-                                        <i class="bi bi-lightning-charge-fill me-2"></i>Acciones Rápidas
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-outline-primary btn-sm" <?= $permisos['bitAgregar'] ? '' : 'disabled' ?> >
-                                            <i class="bi bi-plus-circle me-2"></i>Crear Nuevo
-                                        </button>
-                                        <button class="btn btn-outline-success btn-sm" <?= $permisos['bitConsulta'] ? '' : 'disabled' ?> >
-                                            <i class="bi bi-search me-2"></i>Buscar Registros
-                                        </button>
-                                        <button class="btn btn-outline-warning btn-sm" <?= $permisos['bitEditar'] ? '' : 'disabled' ?> >
-                                            <i class="bi bi-pencil me-2"></i>Editar Información
-                                        </button>
-                                        <button class="btn btn-outline-danger btn-sm" <?= $permisos['bitEliminar'] ? '' : 'disabled' ?> >
-                                            <i class="bi bi-trash me-2"></i>Eliminar Registros
-                                        </button>
-                                        <button class="btn btn-outline-info btn-sm" <?= $permisos['bitDetalle'] ? '' : 'disabled' ?> >
-                                            <i class="bi bi-eye me-2"></i>Ver Detalles
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Panel de Estadísticas -->
+                        <!-- Panel de Estadísticas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card border-0 bg-gradient-primary text-white">

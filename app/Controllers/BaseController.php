@@ -73,6 +73,18 @@ abstract class BaseController extends Controller
                 WHERE p.idPerfil = ? AND LOWER(TRIM(m.strNombreModulo)) = LOWER(TRIM(?))
                 LIMIT 1";
 
+        // Si el perfil es administrador, otorgar todos los permisos automáticamente
+        $perfil = $db->table('Perfil')->select('bitAdministrador')->where('id', $idPerfil)->get()->getRow();
+        if ($perfil && intval($perfil->bitAdministrador) === 1) {
+            return [
+                'bitConsulta' => 1,
+                'bitAgregar' => 1,
+                'bitEditar' => 1,
+                'bitEliminar' => 1,
+                'bitDetalle' => 1
+            ];
+        }
+
         $query = $db->query($sql, [$idPerfil, $nombreModulo]);
         $permiso = $query->getRow();
 
