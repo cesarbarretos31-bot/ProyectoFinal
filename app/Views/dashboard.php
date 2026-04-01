@@ -197,20 +197,20 @@
                 });
             }));
 
-            // 7. Si el módulo define una inicialización global, ejecútala.
+            // 7. Inicializar solo el módulo activo (evita errores de selectores null cuando hay objetos globales de otros módulos)
             if (typeof window.moduleInit === 'function') {
                 window.moduleInit();
             }
-            if (window.appPerfil && typeof window.appPerfil.init === 'function') {
+            if (window.appPerfil && document.querySelector('#formPerfil')) {
                 window.appPerfil.init();
             }
-            if (window.appModulo && typeof window.appModulo.init === 'function') {
+            if (window.appModulo && document.querySelector('#tbody-modulos')) {
                 window.appModulo.init();
             }
-            if (window.appUsuario && typeof window.appUsuario.init === 'function') {
+            if (window.appUsuario && document.querySelector('#tbody-usuarios')) {
                 window.appUsuario.init();
             }
-            if (window.appPermisos && typeof window.appPermisos.init === 'function') {
+            if (window.appPermisos && document.querySelector('#perfilSelect')) {
                 window.appPermisos.init();
             }
 

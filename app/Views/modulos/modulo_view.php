@@ -131,12 +131,15 @@ window.appModulo = {
         if (!confirm('¿Eliminar este módulo?')) return;
 
         const csrf = appModulo.getCsrfToken();
-        const resp = await fetch('<?= base_url('modulo') ?>/' + id, { 
-            method: 'DELETE',
+        const resp = await fetch('<?= base_url('modulo/eliminar') ?>/' + id, { 
+            method: 'POST',
             headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
         });
         if (resp.ok) this.listar();
-        else alert('Error al eliminar');
+        else {
+            const error = await resp.text();
+            alert('Error al eliminar: ' + error);
+        }
     },
 
     getCsrfToken: function() {
