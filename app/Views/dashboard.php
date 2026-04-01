@@ -124,8 +124,9 @@
         `;
 
         // 3. Crear la URL automáticamente (ej. "Perfil" -> "perfil/vista")
-        const slug = nombreModulo.toLowerCase().replace(/\s+/g, '-');
-        const urlFetch = `<?= base_url() ?>/${slug}/vista`;
+       const slug = nombreModulo.toLowerCase().replace(/\s+/g, '-');
+       const baseUrl = "<?= rtrim(base_url(), '/') ?>"; 
+        const urlFetch = `${baseUrl}/${slug}/vista`;
 
         // 4. Pantalla de carga
         mainWrapper.innerHTML = `
