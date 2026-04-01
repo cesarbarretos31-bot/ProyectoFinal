@@ -56,19 +56,19 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
-                                        <button class="btn btn-outline-primary btn-sm" disabled>
+                                        <button class="btn btn-outline-primary btn-sm" <?= $permisos['bitAgregar'] ? '' : 'disabled' ?> >
                                             <i class="bi bi-plus-circle me-2"></i>Crear Nuevo
                                         </button>
-                                        <button class="btn btn-outline-success btn-sm" disabled>
+                                        <button class="btn btn-outline-success btn-sm" <?= $permisos['bitConsulta'] ? '' : 'disabled' ?> >
                                             <i class="bi bi-search me-2"></i>Buscar Registros
                                         </button>
-                                        <button class="btn btn-outline-warning btn-sm" disabled>
+                                        <button class="btn btn-outline-warning btn-sm" <?= $permisos['bitEditar'] ? '' : 'disabled' ?> >
                                             <i class="bi bi-pencil me-2"></i>Editar Información
                                         </button>
-                                        <button class="btn btn-outline-danger btn-sm" disabled>
+                                        <button class="btn btn-outline-danger btn-sm" <?= $permisos['bitEliminar'] ? '' : 'disabled' ?> >
                                             <i class="bi bi-trash me-2"></i>Eliminar Registros
                                         </button>
-                                        <button class="btn btn-outline-info btn-sm" disabled>
+                                        <button class="btn btn-outline-info btn-sm" <?= $permisos['bitDetalle'] ? '' : 'disabled' ?> >
                                             <i class="bi bi-eye me-2"></i>Ver Detalles
                                         </button>
                                     </div>
