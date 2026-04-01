@@ -75,8 +75,19 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            // 'csrf',
-            'csrf' => ['except' => ['auth/login', 'auth/login/*']],
+            // Excepto en login y rutas API internas (no necesitan CSRF en Fetch API POST/PUT/DELETE)
+            'csrf' => [
+                'except' => [
+                    'auth/login',
+                    'auth/login/*',
+                    'perfil/*',
+                    'modulo/*',
+                    'usuario/*',
+                    'permisosperfil/*',
+                    'permisos-perfil/*',
+                    'menu/*'
+                ]
+            ],
             // 'invalidchars',
         ],
         'after' => [
