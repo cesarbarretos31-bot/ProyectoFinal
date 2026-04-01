@@ -15,8 +15,7 @@ $routes->get('logout', 'Auth::logout');
 $routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
 $routes->get('menu/obtenerMenu', 'Menu::obtenerMenu');
 
-// Módulo Perfil (¡OJO AQUÍ!)
 
 
 // Ruta para cargar la vista del módulo perfil
-$routes->get('perfil/vista', 'Perfil::vista');
+$routes->get('perfil/vista', '\App\Controllers\Perfil::vista');
