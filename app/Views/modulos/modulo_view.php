@@ -24,7 +24,8 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer bg-white border-0 py-3">
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <span id="modulo-total-registros" class="text-muted">0 registros</span>
             <nav class="d-flex justify-content-center">
                 <ul class="pagination pagination-sm mb-0" id="paginacion-modulos"></ul>
             </nav>
