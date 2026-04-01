@@ -44,10 +44,11 @@ $routes->post('modulo/guardar', '\App\Controllers\Modulo::guardar');
 $routes->post('modulo/eliminar/(:num)', '\App\Controllers\Modulo::eliminar/$1');
 
 // API REST de Usuario
-$routes->get('usuario/listar', '\App\Controllers\Usuarios::listar');
-$routes->get('usuario/obtener/(:num)', '\App\Controllers\Usuarios::obtener/$1');
-$routes->post('usuario/guardar', '\App\Controllers\Usuarios::guardar');
-$routes->post('usuario/eliminar/(:num)', '\App\Controllers\Usuarios::eliminar/$1');
+$routes->get('usuario/vista', '\App\Controllers\Ususarios::vista');
+$routes->get('usuario/listar', '\App\Controllers\Ususarios::listar');
+$routes->get('usuario/obtener/(:num)', '\App\Controllers\Ususarios::obtener/$1');
+$routes->post('usuario/guardar', '\App\Controllers\Ususarios::guardar');
+$routes->post('usuario/eliminar/(:num)', '\App\Controllers\Ususarios::eliminar/$1');
 
 // API REST de Permisos Perfil
 $routes->get('permisosperfil/listar', '\App\Controllers\PermisosPerfil::listar');
