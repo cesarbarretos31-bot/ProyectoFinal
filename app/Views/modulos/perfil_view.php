@@ -136,6 +136,8 @@ window.appPerfil = {
     guardar: async function(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
+        const csrf = appPerfil.getCsrfToken();
+        if (csrf) formData.append('csrf_test_name', csrf);
         
         try {
             const id = document.getElementById('perfil_id').value;
@@ -144,18 +146,20 @@ window.appPerfil = {
 
             const resp = await fetch(url, {
                 method: method,
+                headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
                 body: formData
             });
             const res = await resp.json();
             
-            if(res.status === 'success') {
+            if(res.status === 'success' || (resp.ok && !res.errors)) {
                 this.modalInstance.hide();
                 this.listar();
             } else {
-                alert("Error al guardar: " + (res.message || "Problema en el servidor"));
+                alert("Error al guardar: " + (res.message || res.errors?.[0] || "Problema en el servidor"));
             }
         } catch (err) {
             console.error("Error al guardar:", err);
+            alert("Error: " + err.message);
         }
     },
 
@@ -163,12 +167,36 @@ window.appPerfil = {
         if(!confirm('¿Seguro que desea eliminar este perfil?')) return;
         
         try {
-            const resp = await fetch(`<?= base_url('perfil/eliminar') ?>/${id}`, { method: 'DELETE' });
+            const csrf = appPerfil.getCsrfToken();
+            const resp = await fetch(`<?= base_url('perfil') ?>/${id}`, { 
+                method: 'DELETE',
+                headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
+            });
             const res = await resp.json();
-            if(res.status === 'success') this.listar();
+            if(resp.ok) this.listar();
+            else alert("Error: " + (res.message || "No se pudo eliminar"));
         } catch (err) {
             console.error("Error al eliminar:", err);
+            alert("Error: " + err.message);
         }
+    },
+
+    getCsrfToken: function() {
+        // Intentar obtener del meta tag primero
+        let token = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (token) return token;
+        
+        // Si no, intentar del cookie
+        const name = 'csrf_cookie_name=';
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const cookieArray = decodedCookie.split(';');
+        for (let cookie of cookieArray) {
+            cookie = cookie.trim();
+            if (cookie.indexOf(name) === 0) {
+                return cookie.substring(name.length, cookie.length);
+            }
+        }
+        return '';
     },
 
     prepararNuevo: function() {

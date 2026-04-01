@@ -107,26 +107,50 @@ window.appModulo = {
         e.preventDefault();
         const id = document.getElementById('modulo_id').value;
         const form = new FormData(document.getElementById('formModulo'));
+        const csrf = appModulo.getCsrfToken();
+        if (csrf) form.append('csrf_test_name', csrf);
 
         const url = id ? '<?= base_url('modulo') ?>/' + id : '<?= base_url('modulo/guardar') ?>';
         const method = id ? 'PUT' : 'POST';
 
-        const resp = await fetch(url, { method, body: form });
+        const resp = await fetch(url, { 
+            method, 
+            body: form,
+            headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
+        });
         const json = await resp.json();
 
         if (resp.ok) {
             this.modalInstance.hide();
             this.listar();
         } else {
-            alert(json.message || 'Error al guardar');
+            alert(json.message || json.errors?.[0] || 'Error al guardar');
         }
     },
 
     eliminar: async function(id) {
         if (!confirm('¿Eliminar este módulo?')) return;
 
-        const resp = await fetch('<?= base_url('modulo') ?>/' + id, { method: 'DELETE' });
+        const csrf = appModulo.getCsrfToken();
+        const resp = await fetch('<?= base_url('modulo') ?>/' + id, { 
+            method: 'DELETE',
+            headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
+        });
         if (resp.ok) this.listar();
+        else alert('Error al eliminar');
+    },
+
+    getCsrfToken: function() {
+        let token = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (token) return token;
+        const name = 'csrf_cookie_name=';
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const cookieArray = decodedCookie.split(';');
+        for (let cookie of cookieArray) {
+            cookie = cookie.trim();
+            if (cookie.indexOf(name) === 0) return cookie.substring(name.length);
+        }
+        return '';
     }
 };
 

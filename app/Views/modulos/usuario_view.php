@@ -145,26 +145,50 @@ window.appUsuario = {
         e.preventDefault();
         const id = document.getElementById('usuario_id').value;
         const formData = new FormData(document.getElementById('formUsuario'));
+        const csrf = appUsuario.getCsrfToken();
+        if (csrf) formData.append('csrf_test_name', csrf);
 
         const url = id ? '<?= base_url('usuario') ?>/' + id : '<?= base_url('usuario/guardar') ?>';
         const method = id ? 'PUT' : 'POST';
 
-        const resp = await fetch(url, { method, body: formData });
+        const resp = await fetch(url, { 
+            method, 
+            body: formData,
+            headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
+        });
         const result = await resp.json();
 
         if (resp.ok) {
             this.modalInstance.hide();
             this.listar();
         } else {
-            alert(result.message || 'Error al guardar el usuario');
+            alert(result.message || result.errors?.[0] || 'Error al guardar el usuario');
         }
     },
 
     eliminar: async function(id) {
         if (!confirm('¿Eliminar este usuario?')) return;
 
-        const resp = await fetch('<?= base_url('usuario') ?>/' + id, { method: 'DELETE' });
+        const csrf = appUsuario.getCsrfToken();
+        const resp = await fetch('<?= base_url('usuario') ?>/' + id, { 
+            method: 'DELETE',
+            headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
+        });
         if (resp.ok) this.listar();
+        else alert('Error al eliminar');
+    },
+
+    getCsrfToken: function() {
+        let token = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (token) return token;
+        const name = 'csrf_cookie_name=';
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const cookieArray = decodedCookie.split(';');
+        for (let cookie of cookieArray) {
+            cookie = cookie.trim();
+            if (cookie.indexOf(name) === 0) return cookie.substring(name.length);
+        }
+        return '';
     }
 };
 
