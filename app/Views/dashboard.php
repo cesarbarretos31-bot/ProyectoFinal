@@ -124,8 +124,14 @@
         `;
 
         // 3. Crear la URL automáticamente (ej. "Perfil" -> "perfil/vista")
-       const slug = nombreModulo.toLowerCase().replace(/\s+/g, '-');
-       const baseUrl = "<?= rtrim(base_url(), '/') ?>"; 
+        const slug = nombreModulo
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '-');
+        const baseUrl = "<?= rtrim(base_url(), '/') ?>"; 
         const urlFetch = `${baseUrl}/${slug}/vista`;
 
         // 4. Pantalla de carga
@@ -146,16 +152,32 @@
 
             // 6. TRUCO DE MAGIA: Ejecutar los scripts internos del módulo
             const scripts = mainWrapper.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                if (oldScript.src) {
-                    newScript.src = oldScript.src;
-                } else {
-                    newScript.text = oldScript.innerText;
-                }
-                document.body.appendChild(newScript);
-                document.body.removeChild(newScript); // Se ejecuta y se limpia al instante
-            });
+            await Promise.all(Array.from(scripts).map(oldScript => {
+                return new Promise(resolve => {
+                    if (oldScript.src) {
+                        const newScript = document.createElement('script');
+                        newScript.src = oldScript.src;
+                        newScript.async = false;
+                        newScript.onload = () => {
+                            newScript.remove();
+                            resolve();
+                        };
+                        newScript.onerror = () => {
+                            console.error('Error cargando script:', oldScript.src);
+                            newScript.remove();
+                            resolve();
+                        };
+                        document.body.appendChild(newScript);
+                    } else {
+                        try {
+                            (new Function(oldScript.innerText || oldScript.textContent))();
+                        } catch (execError) {
+                            console.error('Error ejecutando script inline:', execError);
+                        }
+                        resolve();
+                    }
+                });
+            }));
 
         } catch (error) {
             console.error('Error cargando vista:', error);
