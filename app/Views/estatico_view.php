@@ -113,26 +113,6 @@
                         </div>
                     </div>
 
-                    <!-- Panel de Estado del Sistema -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card border-0">
-                                <div class="card-header bg-success text-white">
-                                    <h6 class="mb-0">
-                                        <i class="bi bi-check-circle-fill me-2"></i>Estado del Sistema
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="alert alert-success border-0 mb-0" role="alert">
-                                        <i class="bi bi-check-circle-fill me-2"></i>
-                                        <strong>Módulo operativo:</strong> El sistema está funcionando correctamente.
-                                        Todas las funciones están disponibles.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center mb-2">

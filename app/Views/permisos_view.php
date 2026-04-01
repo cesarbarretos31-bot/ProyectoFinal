@@ -13,6 +13,10 @@
             </select>
     </div>
     <div class="card-body">
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <button id="btnGuardarMatriz" class="btn btn-primary" onclick="guardarMatriz()">Guardar Matriz de Permisos</button>
+            <span id="mensajeMatriz" class="text-muted">Ajusta los switches y presiona guardar.</span>
+        </div>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -43,13 +47,13 @@ async function cargarPermisosTabla() {
     let html = '';
     permisos.forEach(p => {
         html += `
-            <tr>
+            <tr data-idmodulo="${p.idModulo}" data-idpermiso="${p.idPermiso}">
                 <td>${p.strNombreModulo}</td>
-                <td>${crearSwitch(p.id, 'bitConsulta', p.bitConsulta)}</td>
-                <td>${crearSwitch(p.id, 'bitAgregar', p.bitAgregar)}</td>
-                <td>${crearSwitch(p.id, 'bitEditar', p.bitEditar)}</td>
-                <td>${crearSwitch(p.id, 'bitEliminar', p.bitEliminar)}</td>
-                <td>${crearSwitch(p.id, 'bitDetalle', p.bitDetalle)}</td>
+                <td>${crearSwitch(p.idPermiso, 'bitConsulta', p.bitConsulta)}</td>
+                <td>${crearSwitch(p.idPermiso, 'bitAgregar', p.bitAgregar)}</td>
+                <td>${crearSwitch(p.idPermiso, 'bitEditar', p.bitEditar)}</td>
+                <td>${crearSwitch(p.idPermiso, 'bitEliminar', p.bitEliminar)}</td>
+                <td>${crearSwitch(p.idPermiso, 'bitDetalle', p.bitDetalle)}</td>
             </tr>`;
     });
     document.getElementById('tablaPermisosBody').innerHTML = html;
@@ -77,5 +81,60 @@ async function cambiarPermiso(id, campo, estado) {
     });
     
     // Al actualizar, el menú dinámico se verá afectado la próxima vez que cargue
+}
+
+async function guardarMatriz() {
+    const idPerfil = document.getElementById('selectPerfil').value;
+    const mensaje = document.getElementById('mensajeMatriz');
+    const boton = document.getElementById('btnGuardarMatriz');
+
+    if (!idPerfil) {
+        alert('Seleccione un perfil antes de guardar la matriz.');
+        return;
+    }
+
+    boton.disabled = true;
+    boton.textContent = 'Guardando...';
+
+    const filas = Array.from(document.querySelectorAll('#tablaPermisosBody tr'));
+    const permisosAEnviar = filas.map(fila => {
+        const idModulo = Number(fila.dataset.idmodulo || 0);
+        const chev = (name) => fila.querySelector(`input[onchange*="${name}"]`)?.checked ? 1 : 0;
+
+        return {
+            idModulo,
+            bitConsulta: chev('bitConsulta'),
+            bitAgregar: chev('bitAgregar'),
+            bitEditar: chev('bitEditar'),
+            bitEliminar: chev('bitEliminar'),
+            bitDetalle: chev('bitDetalle')
+        };
+    }).filter(item => item.idModulo > 0);
+
+    try {
+        const resp = await fetch('/permisosperfil/guardar-matriz', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ idPerfil: Number(idPerfil), permisos: permisosAEnviar })
+        });
+
+        const result = await resp.json();
+
+        if (!resp.ok) throw new Error(result.message || 'Error al guardar matriz');
+
+        mensaje.textContent = 'Matriz guardada correctamente.';
+        mensaje.className = 'text-success';
+        cargarPermisosTabla();
+    } catch (err) {
+        mensaje.textContent = 'Error guardando matriz: ' + err.message;
+        mensaje.className = 'text-danger';
+        console.error(err);
+    } finally {
+        boton.disabled = false;
+        boton.textContent = 'Guardar Matriz de Permisos';
+    }
 }
 </script>
