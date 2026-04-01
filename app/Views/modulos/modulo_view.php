@@ -4,6 +4,10 @@
             <h4 class="fw-bold mb-0"><i class="bi bi-layers text-primary me-2"></i> Gestión de Módulos</h4>
             <small class="text-muted" id="modulo-total-registros">Cargando...</small>
         </div>
+        <div class="input-group w-50">
+            <input id="txtBuscarModulo" type="text" class="form-control" placeholder="Buscar módulo..." onkeyup="appModulo.buscar()">
+            <button class="btn btn-outline-secondary" type="button" onclick="appModulo.buscar()">Buscar</button>
+        </div>
         <button class="btn btn-primary btn-sm" onclick="appModulo.prepararNuevo()">+ Nuevo Módulo</button>
     </div>
 
@@ -67,14 +71,17 @@ window.appModulo = {
 
     listar: async function() {
         try {
-            const res = await fetch('<?= base_url('modulo/listar') ?>');
-            const datos = await res.json();
+            const query = new URLSearchParams({ page: this.paginaActual, search: document.getElementById('txtBuscarModulo')?.value || '' });
+            const resp = await fetch(`<?= base_url('modulo/listar') ?>?${query}`);
+            const res = await resp.json();
+            const datos = res.data || [];
             const tbody = document.getElementById('tbody-modulos');
             tbody.innerHTML = '';
 
             if (datos.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay módulos.</td></tr>';
                 document.getElementById('modulo-total-registros').textContent = '0 registros';
+                document.getElementById('paginacion-modulos').innerHTML = '';
                 return;
             }
 
@@ -82,10 +89,11 @@ window.appModulo = {
                 tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.strNombreModulo}</td><td class="text-end"><button class="btn btn-sm btn-warning me-1" onclick="appModulo.editar(${item.id}, '${item.strNombreModulo}')">Editar</button><button class="btn btn-sm btn-danger" onclick="appModulo.eliminar(${item.id})">Eliminar</button></td></tr>`;
             });
 
-            document.getElementById('modulo-total-registros').textContent = `${datos.length} registros`;
-            document.getElementById('paginacion-modulos').innerHTML = '';
+            document.getElementById('modulo-total-registros').textContent = `${res.pager.totalRows} registros`;
+            this.actualizarPaginacion(res.pager);
         } catch (err) {
             console.error('Error al listar módulos', err);
+            document.getElementById('tbody-modulos').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error al cargar los datos</td></tr>';
         }
     },
 
@@ -139,6 +147,33 @@ window.appModulo = {
         else {
             const error = await resp.text();
             alert('Error al eliminar: ' + error);
+        }
+    },
+
+    buscar: function() {
+        this.paginaActual = 1;
+        this.listar();
+    },
+
+    actualizarPaginacion: function(pager) {
+        const cont = document.getElementById('paginacion-modulos');
+        cont.innerHTML = '';
+        if (!pager || pager.total <= 1) return;
+
+        if (pager.current > 1) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=${pager.current - 1}; appModulo.listar();">Anterior</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Anterior</span></li>`;
+        }
+
+        for (let i = 1; i <= pager.total; i++) {
+            cont.innerHTML += `<li class="page-item ${i === pager.current ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=${i}; appModulo.listar();">${i}</a></li>`;
+        }
+
+        if (pager.current < pager.total) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=${pager.current + 1}; appModulo.listar();">Siguiente</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Siguiente</span></li>`;
         }
     },
 

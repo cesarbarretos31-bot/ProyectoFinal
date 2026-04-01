@@ -12,11 +12,13 @@ class PermisosPerfil extends BaseController {
     }
 
     public function mostrar($idPerfil) {
-        $model = new PermisosModel();
-        $data = $model->select('permisos_perfil.*, modulo.strNombreModulo')
-                      ->join('modulo', 'modulo.id = permisos_perfil.idModulo')
-                      ->where('idPerfil', $idPerfil)
-                      ->findAll();
+        $db = \Config\Database::connect();
+        $builder = $db->table('Modulo m')
+            ->select('m.id as idModulo, m.strNombreModulo, IFNULL(p.id, 0) as idPermiso, IFNULL(p.bitConsulta, 0) as bitConsulta, IFNULL(p.bitAgregar, 0) as bitAgregar, IFNULL(p.bitEditar, 0) as bitEditar, IFNULL(p.bitEliminar, 0) as bitEliminar, IFNULL(p.bitDetalle, 0) as bitDetalle')
+            ->join('PermisosPerfil p', 'p.idModulo = m.id AND p.idPerfil = '.$idPerfil, 'left')
+            ->orderBy('m.id', 'ASC');
+
+        $data = $builder->get()->getResultArray();
         return $this->respond($data);
     }
 
@@ -51,8 +53,9 @@ class PermisosPerfil extends BaseController {
             'bitDetalle' => $this->request->getPost('bitDetalle') ? 1 : 0,
         ];
 
-        if ($model->insert($data)) {
-            return $this->respondCreated(['msg' => 'Permiso creado']);
+        $insert = $model->insert($data);
+        if ($insert) {
+            return $this->respondCreated(['id' => $insert, 'msg' => 'Permiso creado']);
         }
         return $this->fail('Error al guardar permiso');
     }

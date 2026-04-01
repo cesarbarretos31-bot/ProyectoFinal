@@ -17,8 +17,23 @@ class Modulo extends BaseController
     public function listar()
     {
         $model = new ModuloModel();
-        $datos = $model->orderBy('id', 'ASC')->findAll();
-        return $this->respond($datos);
+        $page = (int) $this->request->getGet('page') ?: 1;
+        $search = trim($this->request->getGet('search'));
+
+        if ($search !== '') {
+            $model->like('strNombreModulo', $search);
+        }
+
+        $datos = $model->orderBy('id', 'ASC')->paginate(5, 'default');
+
+        return $this->respond([
+            'data' => $datos,
+            'pager' => [
+                'total' => (int) $model->pager->getPageCount(),
+                'current' => $page,
+                'totalRows' => (int) $model->pager->getTotal(),
+            ]
+        ]);
     }
 
     public function obtener($id = null)
