@@ -223,33 +223,60 @@ window.appPermisos = {
             return;
         }
 
+        if (!<?= $permisos['bitEditar'] ? 'true' : 'false' ?>) {
+            alert('No tienes permiso para editar esta matriz.');
+            return;
+        }
+
         const rows = document.querySelectorAll('#permisosBody tr');
         for (const row of rows) {
             const idPermiso = Number(row.dataset.idpermiso);
             const idModulo = Number(row.dataset.idmodulo);
             if (!idModulo) continue;
 
-            const payload = new URLSearchParams();
-            payload.append('idPerfil', this.idPerfilActual);
-            payload.append('idModulo', idModulo);
-            payload.append('bitConsulta', row.querySelector('input[onchange*="bitConsulta"]')?.checked ? 1 : 0);
-            payload.append('bitAgregar', row.querySelector('input[onchange*="bitAgregar"]')?.checked ? 1 : 0);
-            payload.append('bitEditar', row.querySelector('input[onchange*="bitEditar"]')?.checked ? 1 : 0);
-            payload.append('bitEliminar', row.querySelector('input[onchange*="bitEliminar"]')?.checked ? 1 : 0);
-            payload.append('bitDetalle', row.querySelector('input[onchange*="bitDetalle"]')?.checked ? 1 : 0);
+            const bitConsulta = row.querySelector('input[onchange*="bitConsulta"]')?.checked ? 1 : 0;
+            const bitAgregar = row.querySelector('input[onchange*="bitAgregar"]')?.checked ? 1 : 0;
+            const bitEditar = row.querySelector('input[onchange*="bitEditar"]')?.checked ? 1 : 0;
+            const bitEliminar = row.querySelector('input[onchange*="bitEliminar"]')?.checked ? 1 : 0;
+            const bitDetalle = row.querySelector('input[onchange*="bitDetalle"]')?.checked ? 1 : 0;
 
             if (idPermiso > 0) {
-                await this.actualizarPermiso(idPermiso, 'bitConsulta', row.querySelector('input[onchange*="bitConsulta"]')?.checked ? 1 : 0);
-                await this.actualizarPermiso(idPermiso, 'bitAgregar', row.querySelector('input[onchange*="bitAgregar"]')?.checked ? 1 : 0);
-                await this.actualizarPermiso(idPermiso, 'bitEditar', row.querySelector('input[onchange*="bitEditar"]')?.checked ? 1 : 0);
-                await this.actualizarPermiso(idPermiso, 'bitEliminar', row.querySelector('input[onchange*="bitEliminar"]')?.checked ? 1 : 0);
-                await this.actualizarPermiso(idPermiso, 'bitDetalle', row.querySelector('input[onchange*="bitDetalle"]')?.checked ? 1 : 0);
+                const payload = new URLSearchParams();
+                payload.append('id', idPermiso);
+                payload.append('campo', 'bitConsulta');
+                payload.append('valor', bitConsulta);
+                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+
+                payload.set('campo', 'bitAgregar');
+                payload.set('valor', bitAgregar);
+                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+
+                payload.set('campo', 'bitEditar');
+                payload.set('valor', bitEditar);
+                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+
+                payload.set('campo', 'bitEliminar');
+                payload.set('valor', bitEliminar);
+                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+
+                payload.set('campo', 'bitDetalle');
+                payload.set('valor', bitDetalle);
+                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
             } else {
+                const payload = new URLSearchParams();
+                payload.append('idPerfil', this.idPerfilActual);
+                payload.append('idModulo', idModulo);
+                payload.append('bitConsulta', bitConsulta);
+                payload.append('bitAgregar', bitAgregar);
+                payload.append('bitEditar', bitEditar);
+                payload.append('bitEliminar', bitEliminar);
+                payload.append('bitDetalle', bitDetalle);
+
                 await fetch('<?= base_url('permisosperfil/guardar') ?>', { method: 'POST', body: payload });
             }
         }
 
-        alert('Matriz de permisos guardada.');
+        alert('Matriz de permisos guardada correctamente.');
         this.cargar();
     }
 };
