@@ -85,8 +85,12 @@ class Usuarios extends BaseController {
             return $this->failNotFound('Usuario no encontrado');
         }
 
-        if (!$model->delete($id)) {
-            return $this->failServerError('No se pudo eliminar el usuario');
+        try {
+            if (!$model->delete($id)) {
+                return $this->failServerError('No se pudo eliminar el usuario.');
+            }
+        } catch (\Exception $e) {
+            return $this->failServerError('No se pudo eliminar el usuario: ' . $e->getMessage());
         }
 
         return $this->respondDeleted(['status' => 'success', 'message' => 'Usuario eliminado']);

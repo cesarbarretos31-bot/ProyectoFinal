@@ -138,20 +138,19 @@ window.appPerfil = {
         const formData = new FormData(e.target);
         const csrf = appPerfil.getCsrfToken();
         if (csrf) formData.append('csrf_test_name', csrf);
-        
-        try {
-            const id = document.getElementById('perfil_id').value;
-            const url = id ? '<?= base_url("perfil") ?>/' + id : '<?= base_url("perfil/guardar") ?>';
-            const method = id ? 'PUT' : 'POST';
 
-            const resp = await fetch(url, {
-                method: method,
+        const id = document.getElementById('perfil_id').value;
+        if (id) formData.append('id', id);
+
+        try {
+            const resp = await fetch('<?= base_url("perfil/guardar") ?>', {
+                method: 'POST',
                 headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
                 body: formData
             });
             const res = await resp.json();
-            
-            if(res.status === 'success' || (resp.ok && !res.errors)) {
+
+            if (resp.ok) {
                 this.modalInstance.hide();
                 this.listar();
             } else {

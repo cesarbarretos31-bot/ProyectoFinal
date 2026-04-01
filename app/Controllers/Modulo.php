@@ -34,16 +34,28 @@ class Modulo extends BaseController
     public function guardar()
     {
         $model = new ModuloModel();
+        $id = $this->request->getPost('id');
         $data = ['strNombreModulo' => trim($this->request->getPost('strNombreModulo'))];
 
         if (!$this->validate(['strNombreModulo' => 'required|min_length[2]|max_length[100]'])) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
-        $id = $model->insert($data);
-        if (!$id) return $this->failServerError('No se pudo crear el módulo');
+        if ($id) {
+            $row = $model->find($id);
+            if (!$row) {
+                return $this->failNotFound('Módulo no encontrado');
+            }
+            if (!$model->update($id, $data)) {
+                return $this->failServerError('No se pudo actualizar el módulo');
+            }
+            return $this->respond(['id' => $id, 'message' => 'Módulo actualizado']);
+        }
 
-        return $this->respondCreated(['id' => $id, 'message' => 'Módulo creado']);
+        $insertId = $model->insert($data);
+        if (!$insertId) return $this->failServerError('No se pudo crear el módulo');
+
+        return $this->respondCreated(['id' => $insertId, 'message' => 'Módulo creado']);
     }
 
     public function actualizar($id = null)
@@ -71,8 +83,12 @@ class Modulo extends BaseController
         $fila = $model->find($id);
         if (!$fila) return $this->failNotFound('Módulo no encontrado');
 
-        if (!$model->delete($id)) {
-            return $this->failServerError('No se pudo eliminar el módulo');
+        try {
+            if (!$model->delete($id)) {
+                return $this->failServerError('No se pudo eliminar el módulo. Verifica relaciones.');
+            }
+        } catch (\Exception $e) {
+            return $this->failServerError('No se pudo eliminar el módulo. Debe eliminar registros relacionados en Menu/PermisosPerfil primero. ' . $e->getMessage());
         }
 
         return $this->respondDeleted(['message' => 'Módulo eliminado']);

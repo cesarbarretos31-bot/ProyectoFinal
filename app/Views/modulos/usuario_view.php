@@ -148,11 +148,10 @@ window.appUsuario = {
         const csrf = appUsuario.getCsrfToken();
         if (csrf) formData.append('csrf_test_name', csrf);
 
-        const url = id ? '<?= base_url('usuario') ?>/' + id : '<?= base_url('usuario/guardar') ?>';
-        const method = id ? 'PUT' : 'POST';
+        if (id) formData.append('id', id);
 
-        const resp = await fetch(url, { 
-            method, 
+        const resp = await fetch('<?= base_url('usuario/guardar') ?>', {
+            method: 'POST',
             body: formData,
             headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
         });

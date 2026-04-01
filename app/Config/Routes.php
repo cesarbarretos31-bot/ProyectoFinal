@@ -34,31 +34,24 @@ $routes->get('principal-2-2/vista', '\App\Controllers\Principal::mostrar/2-2');
 // API REST de Perfil (CRUD)
 $routes->get('perfil/listar', '\App\Controllers\Perfil::listar');
 $routes->get('perfil/obtener/(:num)', '\App\Controllers\Perfil::obtener/$1');
-$routes->post('perfil', '\App\Controllers\Perfil::crear');
-$routes->put('perfil/(:num)', '\App\Controllers\Perfil::actualizar/$1');
-$routes->delete('perfil/(:num)', '\App\Controllers\Perfil::eliminar/$1');
-
-// Compatibilidad para vista de CRUD tradicional
 $routes->post('perfil/guardar', '\App\Controllers\Perfil::guardar');
-$routes->delete('perfil/eliminar/(:num)', '\App\Controllers\Perfil::eliminar/$1');
+$routes->post('perfil/eliminar/(:num)', '\App\Controllers\Perfil::eliminar/$1');
 
 // API REST de Módulo
 $routes->get('modulo/listar', '\App\Controllers\Modulo::listar');
 $routes->get('modulo/obtener/(:num)', '\App\Controllers\Modulo::obtener/$1');
 $routes->post('modulo/guardar', '\App\Controllers\Modulo::guardar');
-$routes->put('modulo/(:num)', '\App\Controllers\Modulo::actualizar/$1');
-$routes->delete('modulo/(:num)', '\App\Controllers\Modulo::eliminar/$1');
+$routes->post('modulo/eliminar/(:num)', '\App\Controllers\Modulo::eliminar/$1');
 
 // API REST de Usuario
 $routes->get('usuario/listar', '\App\Controllers\Usuarios::listar');
 $routes->get('usuario/obtener/(:num)', '\App\Controllers\Usuarios::obtener/$1');
 $routes->post('usuario/guardar', '\App\Controllers\Usuarios::guardar');
-$routes->put('usuario/(:num)', '\App\Controllers\Usuarios::actualizar/$1');
-$routes->delete('usuario/(:num)', '\App\Controllers\Usuarios::eliminar/$1');
+$routes->post('usuario/eliminar/(:num)', '\App\Controllers\Usuarios::eliminar/$1');
 
 // API REST de Permisos Perfil
 $routes->get('permisosperfil/listar', '\App\Controllers\PermisosPerfil::listar');
 $routes->get('permisosperfil/mostrar/(:num)', '\App\Controllers\PermisosPerfil::mostrar/$1');
 $routes->post('permisosperfil/guardar', '\App\Controllers\PermisosPerfil::guardar');
 $routes->post('permisosperfil/actualizar', '\App\Controllers\PermisosPerfil::actualizar');
-$routes->delete('permisosperfil/(:num)', '\App\Controllers\PermisosPerfil::eliminar/$1');
+$routes->post('permisosperfil/eliminar/(:num)', '\App\Controllers\PermisosPerfil::eliminar/$1');

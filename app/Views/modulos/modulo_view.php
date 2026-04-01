@@ -110,11 +110,10 @@ window.appModulo = {
         const csrf = appModulo.getCsrfToken();
         if (csrf) form.append('csrf_test_name', csrf);
 
-        const url = id ? '<?= base_url('modulo') ?>/' + id : '<?= base_url('modulo/guardar') ?>';
-        const method = id ? 'PUT' : 'POST';
+        if (id) form.append('id', id);
 
-        const resp = await fetch(url, { 
-            method, 
+        const resp = await fetch('<?= base_url('modulo/guardar') ?>', {
+            method: 'POST',
             body: form,
             headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
         });
