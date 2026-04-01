@@ -110,59 +110,37 @@
         } catch (error) { console.error("Error al cargar menú:", error); }
     }
 
-    async function cargarModulo(nombre, elementoMenu) {
-        const contenedor = document.getElementById('mainWrapper');
-        const breadcrumb = document.getElementById('breadcrumbArea');
-        const slug = nombre.toLowerCase().replace(/\s+/g, '-'); 
-        
-        // 1. Actualizar estilos del menú activo
-        document.querySelectorAll('.module-link').forEach(el => el.classList.remove('active'));
-        if(elementoMenu) elementoMenu.classList.add('active');
+    async function cargarModulo(url, nombreModulo) {
+    const mainWrapper = document.getElementById('mainWrapper');
+    
+    // 1. Mostrar estado de carga
+    mainWrapper.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Cargando ${nombreModulo}...</p>
+        </div>`;
 
-        // 2. Actualizar Breadcrumbs (Requisito del PDF)
-        breadcrumb.innerHTML = `
-            <li class="breadcrumb-item"><a href="javascript:void(0)" onclick="location.reload()" class="text-decoration-none">Inicio</a></li>
-            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">${nombre}</li>
-        `;
-
-        // 3. Mostrar indicador de carga
-        contenedor.innerHTML = `<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Cargando módulo ${nombre}...</p></div>`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Error en la respuesta del servidor');
         
-        try {
-            // FIX: Uso de base_url() en lugar de la URL quemada de Railway
-            const urlFetch = `<?= base_url('index.php/') ?>${slug}/vista`;
-            const res = await fetch(urlFetch);
-            
-            if(!res.ok) throw new Error("Error HTTP " + res.status);
-            
-            const html = await res.text();
-            contenedor.innerHTML = html;
-            
-            // 4. Ejecutar scripts de forma segura
-            const scripts = contenedor.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                newScript.text = oldScript.innerText;
-                // Agregamos un try-catch interno por si el script del módulo tiene errores
-                try {
-                    document.body.appendChild(newScript);
-                } catch (e) {
-                    console.error(`Error al ejecutar script del módulo ${nombre}:`, e);
-                } finally {
-                    document.body.removeChild(newScript);
-                }
-            });
-        } catch (e) {
-            console.error("Error cargando vista:", e);
-            contenedor.innerHTML = `
-                <div class="alert alert-danger shadow-sm mt-4">
-                    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Error de conexión</h5>
-                    <p>No se pudo cargar el módulo <b>${nombre}</b>.</p>
-                    <hr>
-                    <small>Verifica que el controlador <code>${nombre}.php</code> y su método <code>vista()</code> existan.</small>
-                </div>`;
-        }
+        const html = await response.text();
+        
+        // 2. Insertar el contenido directamente sin usar removeChild
+        mainWrapper.innerHTML = html;
+
+        // 3. Actualizar el Breadcrumb (opcional pero recomendado)
+        const breadcrumb = document.querySelector('.breadcrumb-item.active');
+        if (breadcrumb) breadcrumb.textContent = nombreModulo;
+
+    } catch (error) {
+        console.error('Error cargando vista:', error);
+        mainWrapper.innerHTML = `
+            <div class="alert alert-danger m-4">
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Error de conexión</h4>
+                <p>No se pudo cargar el módulo <b>${nombreModulo}</b>.</p>
+                <hr>
+                <p class="mb-0">Verifica que la URL <u>${url}</u> sea accesible.</p>
+            </div>`;
     }
-</script>
-</body>
-</html>
+}
