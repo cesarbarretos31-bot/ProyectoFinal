@@ -1,7 +1,8 @@
 <div class="container-fluid py-4 fade-in">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
+        <div class="d-flex align-items-center gap-2">
             <h4 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i> Gestión de Usuarios</h4>
+            <input id="txtBuscarUsuario" type="search" class="form-control form-control-sm" style="width: 250px;" placeholder="Buscar usuario..." onkeyup="appUsuario.buscar()">
         </div>
         <button class="btn btn-primary btn-sm" onclick="appUsuario.prepararNuevo()">+ Nuevo Usuario</button>
     </div>
@@ -22,6 +23,11 @@
                     <tr><td colspan="5" class="text-center">Cargando datos...</td></tr>
                 </tbody>
             </table>
+        </div>
+        <div class="card-footer bg-white border-0 py-3">
+            <nav class="d-flex justify-content-center">
+                <ul class="pagination pagination-sm mb-0" id="paginacion-usuarios"></ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -86,6 +92,8 @@
 <script>
 window.appUsuario = {
     modalInstance: null,
+    paginaActual: 1,
+    filtro: '',
 
     init: async function() {
         const el = document.getElementById('modalUsuario');
@@ -105,19 +113,24 @@ window.appUsuario = {
     },
 
     listar: async function() {
-        const resp = await fetch('<?= base_url('usuario/listar') ?>');
-        const usuarios = await resp.json();
+        const query = new URLSearchParams({ page: this.paginaActual || 1, search: this.filtro || '' });
+        const resp = await fetch(`<?= base_url('usuario/listar') ?>?${query}`);
+        const res = await resp.json();
+        const usuarios = res.data || [];
         const tbody = document.getElementById('tbody-usuarios');
         tbody.innerHTML = '';
 
-        if (!usuarios.length) {
+        if (usuarios.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay usuarios.</td></tr>';
+            document.getElementById('paginacion-usuarios').innerHTML = '';
             return;
         }
 
         usuarios.forEach(u => {
             tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.strNombreUsuario}</td><td>${u.perfil||'--'}</td><td>${u.idEstado==1 ? 'Activo' : 'Inactivo'}</td><td class="text-end"><button class="btn btn-sm btn-warning me-1" onclick="appUsuario.editar(${u.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="appUsuario.eliminar(${u.id})">Eliminar</button></td></tr>`;
         });
+
+        this.paginacionUsuarios(res.pager);
     },
 
     prepararNuevo: function() {
@@ -169,12 +182,48 @@ window.appUsuario = {
         if (!confirm('¿Eliminar este usuario?')) return;
 
         const csrf = appUsuario.getCsrfToken();
-        const resp = await fetch('<?= base_url('usuario') ?>/' + id, { 
-            method: 'DELETE',
+        const resp = await fetch('<?= base_url('usuario/eliminar') ?>/' + id, { 
+            method: 'POST',
             headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
         });
-        if (resp.ok) this.listar();
-        else alert('Error al eliminar');
+        if (resp.ok) {
+            this.listar();
+        } else {
+            const txt = await resp.text();
+            alert('Error al eliminar: ' + txt);
+        }
+    },
+
+    buscar: function() {
+        this.paginaActual = 1;
+        this.filtro = document.getElementById('txtBuscarUsuario').value.trim();
+        this.listar();
+    },
+
+    paginacionUsuarios: function(pager) {
+        const cont = document.getElementById('paginacion-usuarios');
+        cont.innerHTML = '';
+
+        if (!pager || pager.total <= 1) {
+            return;
+        }
+
+        const current = pager.current;
+        if (current > 1) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=${current-1}; appUsuario.listar();">Anterior</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Anterior</span></li>`;
+        }
+
+        for (let i = 1; i <= pager.total; i++) {
+            cont.innerHTML += `<li class="page-item ${i===current ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=${i}; appUsuario.listar();">${i}</a></li>`;
+        }
+
+        if (current < pager.total) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=${current+1}; appUsuario.listar();">Siguiente</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Siguiente</span></li>`;
+        }
     },
 
     getCsrfToken: function() {

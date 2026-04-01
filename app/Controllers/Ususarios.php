@@ -15,12 +15,31 @@ class Usuarios extends BaseController {
     public function listar()
     {
         $model = new UsuarioModel();
-        $usuarios = $model->select('Usuario.*, Perfil.strNombrePerfil as perfil')
-            ->join('Perfil', 'Perfil.id = Usuario.idPerfil', 'left')
-            ->orderBy('Usuario.id', 'DESC')
-            ->findAll();
 
-        return $this->respond($usuarios);
+        $page = (int) $this->request->getGet('page') ?: 1;
+        $search = trim($this->request->getGet('search'));
+
+        $model->select('Usuario.*, Perfil.strNombrePerfil as perfil')
+            ->join('Perfil', 'Perfil.id = Usuario.idPerfil', 'left');
+
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('Usuario.strNombreUsuario', $search)
+                ->orLike('Usuario.strCorreo', $search)
+                ->orLike('Perfil.strNombrePerfil', $search)
+            ->groupEnd();
+        }
+
+        $usuarios = $model->orderBy('Usuario.id', 'DESC')->paginate(5, 'default');
+
+        return $this->respond([
+            'data' => $usuarios,
+            'pager' => [
+                'total' => (int) $model->pager->getPageCount(),
+                'current' => $page,
+                'totalRows' => (int) $model->pager->getTotal(),
+            ],
+        ]);
     }
 
     public function obtener($id = null)
