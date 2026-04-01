@@ -138,6 +138,24 @@
             .trim()
             .replace(/\s+/g, '-');
 
+        const rawName = nombreModulo.toLowerCase().trim();
+        const rutasEspecialesPorNombre = {
+            'perfil': 'perfil',
+            'módulo': 'modulo',
+            'modulo': 'modulo',
+            'permisos-perfil': 'permisos-perfil',
+            'permisos perfil': 'permisos-perfil',
+            'usuario': 'usuario',
+            'principal 1.1': 'principal-1-1',
+            'principal 1.2': 'principal-1-2',
+            'principal 2.1': 'principal-2-1',
+            'principal 2.2': 'principal-2-2',
+            'principal-11': 'principal-1-1',
+            'principal-12': 'principal-1-2',
+            'principal-21': 'principal-2-1',
+            'principal-22': 'principal-2-2'
+        };
+
         const rutasEspeciales = {
             'perfil': 'perfil',
             'modulo': 'modulo',
@@ -149,7 +167,7 @@
             'principal-2-2': 'principal-2-2'
         };
 
-        const moduloRuta = rutasEspeciales[slug] || slug;
+        const moduloRuta = rutasEspeciales[slug] || rutasEspecialesPorNombre[rawName] || slug;
         const baseUrl = "<?= rtrim(base_url(), '/') ?>";
         const urlFetch = `${baseUrl}/${moduloRuta}/vista`;
         // 4. Pantalla de carga
