@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-2">
             <h4 class="fw-bold mb-0"><i class="bi bi-layers text-primary me-2"></i> Gestión de Módulos</h4>
-            <input id="txtBuscarModulo" type="search" class="form-control form-control-sm" style="width: 250px;" placeholder="Buscar módulo..." onkeyup="appModulo.buscar()">
+            <input id="txtBuscarModulo" type="search" class="form-control form-control-sm" style="width: 250px;" placeholder="Buscar módulo..." maxlength="100" onkeyup="appModulo.buscar()">
         </div>
         <?php if ($permisos['bitAgregar']): ?>
         <button class="btn btn-primary btn-sm" onclick="appModulo.prepararNuevo()">+ Nuevo Módulo</button>
@@ -44,7 +44,7 @@
                     <input type="hidden" id="modulo_id" name="id">
                     <div class="mb-3">
                         <label class="form-label" for="strNombreModulo">Nombre del Módulo</label>
-                        <input type="text" id="strNombreModulo" name="strNombreModulo" class="form-control" required>
+                        <input type="text" id="strNombreModulo" name="strNombreModulo" class="form-control" maxlength="100" pattern="[a-zA-Z0-9\s]+" title="Solo letras, números y espacios. Máximo 100 caracteres." required>
                     </div>
                 </div>
                 <div class="modal-footer">

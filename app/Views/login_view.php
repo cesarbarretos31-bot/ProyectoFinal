@@ -41,12 +41,12 @@
 
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Usuario</label>
-                        <input type="text" id="username" name="usuario" class="form-control" placeholder="nombre.usuario" required>
+                        <input type="text" id="username" name="usuario" class="form-control" placeholder="nombre.usuario" maxlength="20" pattern="[a-zA-Z0-9\s]+" title="Solo letras, números y espacios. Máximo 20 caracteres." required>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Contraseña</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" maxlength="80" required>
                     </div>
                     
                     <div class="g-recaptcha" data-sitekey="6LfVYoYsAAAAALT4wql4uAmX68Gs2pASFoZHImE5"></div>
@@ -65,10 +65,33 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     
     const msg = document.getElementById('responseMsg');
     const btn = document.getElementById('btnSubmit');
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
     const captchaResponse = grecaptcha.getResponse();
     
     // Reset de UI
     msg.style.display = 'none';
+    
+    // Validación de longitud del usuario
+    if (username.length > 20) {
+        msg.innerText = "El usuario no puede tener más de 20 caracteres.";
+        msg.style.display = 'block';
+        return;
+    }
+    
+    // Validación de patrón del usuario
+    if (!/^[a-zA-Z0-9\s]+$/.test(username)) {
+        msg.innerText = "El usuario solo puede contener letras, números y espacios.";
+        msg.style.display = 'block';
+        return;
+    }
+    
+    // Validación de longitud de contraseña
+    if (password.length > 80) {
+        msg.innerText = "La contraseña no puede tener más de 80 caracteres.";
+        msg.style.display = 'block';
+        return;
+    }
     
     // Validación de Captcha en Cliente
     if(!captchaResponse) {
@@ -82,8 +105,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     // Preparamos los datos (Coinciden con los nombres en Auth.php)
     const formData = new FormData();
-    formData.append('usuario', document.getElementById('username').value);
-    formData.append('password', document.getElementById('password').value);
+    formData.append('usuario', username);
+    formData.append('password', password);
     formData.append('g-recaptcha-response', captchaResponse);
 
     try {

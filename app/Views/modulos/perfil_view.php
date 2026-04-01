@@ -16,7 +16,7 @@
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
                 <input type="text" class="form-control border-start-0" id="txtBuscarPerfil" 
-                       placeholder="Buscar por nombre... (búsqueda automática)" onkeyup="appPerfil.buscarTiempoReal()">
+                       placeholder="Buscar por nombre... (búsqueda automática)" maxlength="100" onkeyup="appPerfil.buscarTiempoReal()">
             </div>
         </div>
     </div>
@@ -57,7 +57,7 @@
                     <input type="hidden" name="id" id="perfil_id">
                     <div class="mb-3">
                         <label class="form-label fw-bold" for="strNombrePerfil">Nombre del Perfil</label>
-                        <input type="text" name="strNombrePerfil" id="strNombrePerfil" class="form-control" required>
+                        <input type="text" name="strNombrePerfil" id="strNombrePerfil" class="form-control" maxlength="100" pattern="[a-zA-Z0-9\s]+" title="Solo letras, números y espacios. Máximo 100 caracteres." required>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="bitAdministrador" id="bitAdministrador" value="1">

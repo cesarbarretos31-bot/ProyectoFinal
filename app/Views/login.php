@@ -17,11 +17,11 @@
     <form id="loginForm">
         <div class="mb-3">
             <label>Usuario</label>
-            <input type="text" id="username" class="form-control" required>
+            <input type="text" id="username" class="form-control" maxlength="20" pattern="[a-zA-Z0-9\s]+" title="Solo letras, números y espacios. Máximo 20 caracteres." required>
         </div>
         <div class="mb-3">
             <label>Contraseña</label>
-            <input type="password" id="password" class="form-control" required>
+            <input type="password" id="password" class="form-control" maxlength="80" required>
         </div>
         
         <div class="mb-3">
@@ -49,6 +49,30 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const errorDiv = document.getElementById('errorMessage');
     errorDiv.style.display = 'none';
 
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    // Validación de longitud del usuario
+    if (username.length > 20) {
+        errorDiv.innerText = "El usuario no puede tener más de 20 caracteres.";
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    // Validación de patrón del usuario
+    if (!/^[a-zA-Z0-9\s]+$/.test(username)) {
+        errorDiv.innerText = "El usuario solo puede contener letras, números y espacios.";
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    // Validación de longitud de contraseña
+    if (password.length > 80) {
+        errorDiv.innerText = "La contraseña no puede tener más de 80 caracteres.";
+        errorDiv.style.display = 'block';
+        return;
+    }
+
     // Validación de Captcha en el cliente antes de enviar [cite: 22, 37]
     const userCaptcha = document.getElementById('captchaInput').value;
     if (parseInt(userCaptcha) !== captchaResult) {
@@ -58,8 +82,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 
     const data = {
-        username: document.getElementById('username').value,
-        password: document.getElementById('password').value,
+        usuario: username,
+        password: password,
         captcha: userCaptcha
     };
 

@@ -58,7 +58,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="mb-0">Contenido</h5>
                                 <div class="d-flex gap-2">
-                                    <input id="txtBuscarPrincipal" type="search" class="form-control form-control-sm" style="max-width: 260px;" placeholder="Buscar..." />
+                                    <input id="txtBuscarPrincipal" type="search" class="form-control form-control-sm" style="max-width: 260px;" placeholder="Buscar..." maxlength="100" />
                                     <button id="btnNuevoPrincipal" class="btn btn-sm btn-primary" <?= $permisos['bitAgregar'] ? '' : 'disabled' ?>>
                                         <i class="bi bi-plus-circle"></i> Nuevo
                                     </button>

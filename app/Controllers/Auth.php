@@ -22,10 +22,18 @@ class Auth extends BaseController
         $db = \Config\Database::connect();
 
         // 1. Capturar datos del POST
-        $postUsuario  = $this->request->getPost('usuario'); 
+        $postUsuario  = trim($this->request->getPost('usuario'));
         $postPassword = $this->request->getPost('password');
 
-        // 2. QUERY CON NOMBRES EXACTOS DE TU IMAGEN
+        // 2. Validación de entrada
+        if (!$this->validate([
+            'usuario' => 'required|alpha_numeric_space|min_length[3]|max_length[20]',
+            'password' => 'required|min_length[6]|max_length[80]'
+        ])) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        // 3. QUERY CON NOMBRES EXACTOS DE TU IMAGEN
         // Tabla: Usuario
         // Columna Nombre: strNombreUsuario
         $sql = "SELECT * FROM Usuario WHERE strNombreUsuario = ? LIMIT 1";
