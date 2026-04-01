@@ -54,5 +54,6 @@ $routes->post('usuario/eliminar/(:num)', '\App\Controllers\Usuarios::eliminar/$1
 $routes->get('permisosperfil/listar', '\App\Controllers\PermisosPerfil::listar');
 $routes->get('permisosperfil/mostrar/(:num)', '\App\Controllers\PermisosPerfil::mostrar/$1');
 $routes->post('permisosperfil/guardar', '\App\Controllers\PermisosPerfil::guardar');
+$routes->post('permisosperfil/guardar-matriz', '\App\Controllers\PermisosPerfil::guardarMatriz');
 $routes->post('permisosperfil/actualizar', '\App\Controllers\PermisosPerfil::actualizar');
 $routes->post('permisosperfil/eliminar/(:num)', '\App\Controllers\PermisosPerfil::eliminar/$1');

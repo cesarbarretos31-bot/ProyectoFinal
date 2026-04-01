@@ -78,7 +78,12 @@ class Usuarios extends BaseController {
         }
 
         if (!$this->validate([ 
-            'strNombreUsuario' => 'required|min_length[3]|max_length[100]'
+            'strNombreUsuario' => 'required|alpha_numeric_space|min_length[3]|max_length[100]',
+            'idPerfil' => 'required|integer|greater_than[0]',
+            'idEstado' => 'required|in_list[0,1]',
+            'strCorreo' => 'required|valid_email|max_length[150]',
+            'strNumeroCelular' => 'permit_empty|numeric|min_length[10]|max_length[15]',
+            'strPwd' => ($id ? 'permit_empty|min_length[6]|max_length[80]' : 'required|min_length[6]|max_length[80]')
         ])) {
             return $this->failValidationErrors($this->validator->getErrors());
         }

@@ -48,7 +48,8 @@ class Perfil extends BaseController
         ];
 
         if (!$this->validate([
-            'strNombrePerfil' => 'required|min_length[3]|max_length[100]',
+            'strNombrePerfil' => 'required|alpha_numeric_space|min_length[3]|max_length[100]',
+            'bitAdministrador' => 'required|in_list[0,1]'
         ])) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
@@ -134,7 +135,8 @@ class Perfil extends BaseController
         ];
 
         if (!$this->validate([
-            'strNombrePerfil' => 'required|min_length[3]|max_length[100]',
+            'strNombrePerfil' => 'required|alpha_numeric_space|min_length[3]|max_length[100]',
+            'bitAdministrador' => 'required|in_list[0,1]'
         ])) {
             return $this->failValidationErrors($this->validator->getErrors());
         }

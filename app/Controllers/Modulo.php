@@ -53,7 +53,7 @@ class Modulo extends BaseController
         $id = $this->request->getPost('id');
         $data = ['strNombreModulo' => trim($this->request->getPost('strNombreModulo'))];
 
-        if (!$this->validate(['strNombreModulo' => 'required|min_length[2]|max_length[100]'])) {
+        if (!$this->validate(['strNombreModulo' => 'required|alpha_numeric_space|min_length[2]|max_length[100]'])) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
@@ -82,7 +82,7 @@ class Modulo extends BaseController
 
         $data = ['strNombreModulo' => trim($this->request->getPost('strNombreModulo'))];
 
-        if (!$this->validate(['strNombreModulo' => 'required|min_length[2]|max_length[100]'])) {
+        if (!$this->validate(['strNombreModulo' => 'required|alpha_numeric_space|min_length[2]|max_length[100]'])) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
