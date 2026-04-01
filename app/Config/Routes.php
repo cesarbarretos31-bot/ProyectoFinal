@@ -19,3 +19,10 @@ $routes->get('menu/obtenerMenu', 'Menu::obtenerMenu');
 
 // Ruta para cargar la vista del módulo perfil
 $routes->get('perfil/vista', '\App\Controllers\Perfil::vista');
+
+// API REST de Perfil (CRUD)
+$routes->get('perfil/listar', '\App\Controllers\Perfil::listar');
+$routes->get('perfil/obtener/(:num)', '\App\Controllers\Perfil::obtener/$1');
+$routes->post('perfil', '\App\Controllers\Perfil::crear');
+$routes->put('perfil/(:num)', '\App\Controllers\Perfil::actualizar/$1');
+$routes->delete('perfil/(:num)', '\App\Controllers\Perfil::eliminar/$1');
