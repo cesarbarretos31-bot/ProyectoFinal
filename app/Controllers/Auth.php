@@ -44,8 +44,13 @@ class Auth extends BaseController
 
         // 5. VALIDACIÓN DE CONTRASEÑA
         // Columna Password: strPwd (según tu imagen)
-        if ($user->strPwd !== $postPassword) {
+        if (!password_verify($postPassword, $user->strPwd)) {
             return $this->respond(['msg' => 'Contraseña incorrecta'], 401);
+        }
+
+        // Si queremos forzar rehash cuando el algoritmo cambia:
+        if (password_needs_rehash($user->strPwd, PASSWORD_BCRYPT)) {
+            $db->table('Usuario')->where('id', $user->id)->update(['strPwd' => password_hash($postPassword, PASSWORD_BCRYPT)]);
         }
 
         // 6. CREAR SESIÓN
