@@ -11,13 +11,75 @@ class Perfil extends BaseController
 
     public function vista()
     {
-        return view('perfil_vista');
+        return view('modulos/perfil_view');
     }
 
     public function listar()
     {
         $model = new PerfilModel();
-        return $this->respond($model->orderBy('id', 'ASC')->findAll());
+        $page = (int) $this->request->getGet('page') ?: 1;
+        $search = trim($this->request->getGet('search'));
+
+        if ($search !== '') {
+            $model->like('strNombrePerfil', $search);
+        }
+
+        $perfiles = $model->orderBy('id', 'DESC')->paginate(5, 'default');
+
+        return $this->respond([
+            'data' => $perfiles,
+            'pager' => [
+                'total' => (int) $model->pager->getPageCount(),
+                'current' => $page,
+                'totalRows' => (int) $model->pager->getTotal(),
+            ]
+        ]);
+    }
+
+    public function guardar()
+    {
+        $model = new PerfilModel();
+
+        $id = $this->request->getPost('id');
+        $data = [
+            'strNombrePerfil' => trim($this->request->getPost('strNombrePerfil')),
+            'bitAdministrador' => $this->request->getPost('bitAdministrador') ? 1 : 0,
+        ];
+
+        if (!$this->validate([
+            'strNombrePerfil' => 'required|min_length[3]|max_length[100]',
+        ])) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        if ($id) {
+            if (!$model->update($id, $data)) {
+                return $this->failServerError('No se pudo actualizar el perfil.');
+            }
+            return $this->respond(['status' => 'success', 'message' => 'Perfil actualizado correctamente']);
+        }
+
+        if (!$model->insert($data)) {
+            return $this->failServerError('No se pudo crear el perfil.');
+        }
+
+        return $this->respondCreated(['status' => 'success', 'message' => 'Perfil creado correctamente']);
+    }
+
+    public function eliminar($id = null)
+    {
+        $model = new PerfilModel();
+        $perfil = $model->find($id);
+
+        if (!$perfil) {
+            return $this->failNotFound("Perfil con ID $id no encontrado");
+        }
+
+        if (!$model->delete($id)) {
+            return $this->failServerError('No se pudo eliminar el perfil.');
+        }
+
+        return $this->respondDeleted(['status' => 'success', 'message' => 'Perfil eliminado correctamente']);
     }
 
     public function obtener($id = null)
@@ -83,21 +145,5 @@ class Perfil extends BaseController
         }
 
         return $this->respond(['message' => 'Perfil actualizado correctamente']);
-    }
-
-    public function eliminar($id = null)
-    {
-        $model = new PerfilModel();
-        $perfil = $model->find($id);
-
-        if (!$perfil) {
-            return $this->failNotFound("Perfil con ID $id no encontrado");
-        }
-
-        if (!$model->delete($id)) {
-            return $this->failServerError('No se pudo eliminar el perfil.');
-        }
-
-        return $this->respondDeleted(['message' => 'Perfil eliminado correctamente']);
     }
 }

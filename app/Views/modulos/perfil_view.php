@@ -138,8 +138,12 @@ window.appPerfil = {
         const formData = new FormData(e.target);
         
         try {
-            const resp = await fetch('<?= base_url("perfil/guardar") ?>', {
-                method: 'POST',
+            const id = document.getElementById('perfil_id').value;
+            const url = id ? '<?= base_url("perfil") ?>/' + id : '<?= base_url("perfil/guardar") ?>';
+            const method = id ? 'PUT' : 'POST';
+
+            const resp = await fetch(url, {
+                method: method,
                 body: formData
             });
             const res = await resp.json();

@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Models\ModuloModel;
+use CodeIgniter\API\ResponseTrait;
+
+class Modulo extends BaseController
+{
+    use ResponseTrait;
+
+    public function vista()
+    {
+        return view('modulos/modulo_view');
+    }
+
+    public function listar()
+    {
+        $model = new ModuloModel();
+        $datos = $model->orderBy('id', 'ASC')->findAll();
+        return $this->respond($datos);
+    }
+
+    public function obtener($id = null)
+    {
+        $model = new ModuloModel();
+        $fila = $model->find($id);
+        if (!$fila) {
+            return $this->failNotFound('Módulo no encontrado');
+        }
+        return $this->respond($fila);
+    }
+
+    public function guardar()
+    {
+        $model = new ModuloModel();
+        $data = ['strNombreModulo' => trim($this->request->getPost('strNombreModulo'))];
+
+        if (!$this->validate(['strNombreModulo' => 'required|min_length[2]|max_length[100]'])) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $id = $model->insert($data);
+        if (!$id) return $this->failServerError('No se pudo crear el módulo');
+
+        return $this->respondCreated(['id' => $id, 'message' => 'Módulo creado']);
+    }
+
+    public function actualizar($id = null)
+    {
+        $model = new ModuloModel();
+        $fila = $model->find($id);
+        if (!$fila) return $this->failNotFound('Módulo no encontrado');
+
+        $data = ['strNombreModulo' => trim($this->request->getPost('strNombreModulo'))];
+
+        if (!$this->validate(['strNombreModulo' => 'required|min_length[2]|max_length[100]'])) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        if (!$model->update($id, $data)) {
+            return $this->failServerError('No se pudo actualizar el módulo');
+        }
+
+        return $this->respond(['message' => 'Módulo actualizado']);
+    }
+
+    public function eliminar($id = null)
+    {
+        $model = new ModuloModel();
+        $fila = $model->find($id);
+        if (!$fila) return $this->failNotFound('Módulo no encontrado');
+
+        if (!$model->delete($id)) {
+            return $this->failServerError('No se pudo eliminar el módulo');
+        }
+
+        return $this->respondDeleted(['message' => 'Módulo eliminado']);
+    }
+}

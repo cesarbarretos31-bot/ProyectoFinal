@@ -106,6 +106,12 @@
                         </a>
                     </li>`;
             });
+
+            // Si hay al menos un módulo, cargamos el primero automáticamente.
+            const primerLink = sidebar.querySelector('.module-link');
+            if (primerLink) {
+                primerLink.click();
+            }
         } catch (error) { console.error("Error al cargar menú:", error); }
     }
 
@@ -131,9 +137,21 @@
             .replace(/[^a-z0-9\s-]/g, '')
             .trim()
             .replace(/\s+/g, '-');
-        const baseUrl = "<?= rtrim(base_url(), '/') ?>"; 
-        const urlFetch = `${baseUrl}/${slug}/vista`;
 
+        const rutasEspeciales = {
+            'perfil': 'perfil',
+            'modulo': 'modulo',
+            'permisos-perfil': 'permisos-perfil',
+            'usuario': 'usuario',
+            'principal-1-1': 'principal-1-1',
+            'principal-1-2': 'principal-1-2',
+            'principal-2-1': 'principal-2-1',
+            'principal-2-2': 'principal-2-2'
+        };
+
+        const moduloRuta = rutasEspeciales[slug] || slug;
+        const baseUrl = "<?= rtrim(base_url(), '/') ?>";
+        const urlFetch = `${baseUrl}/${moduloRuta}/vista`;
         // 4. Pantalla de carga
         mainWrapper.innerHTML = `
             <div class="text-center p-5">
@@ -178,6 +196,23 @@
                     }
                 });
             }));
+
+            // 7. Si el módulo define una inicialización global, ejecútala.
+            if (typeof window.moduleInit === 'function') {
+                window.moduleInit();
+            }
+            if (window.appPerfil && typeof window.appPerfil.init === 'function') {
+                window.appPerfil.init();
+            }
+            if (window.appModulo && typeof window.appModulo.init === 'function') {
+                window.appModulo.init();
+            }
+            if (window.appUsuario && typeof window.appUsuario.init === 'function') {
+                window.appUsuario.init();
+            }
+            if (window.appPermisos && typeof window.appPermisos.init === 'function') {
+                window.appPermisos.init();
+            }
 
         } catch (error) {
             console.error('Error cargando vista:', error);
