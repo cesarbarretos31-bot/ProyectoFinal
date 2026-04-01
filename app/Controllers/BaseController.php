@@ -70,7 +70,7 @@ abstract class BaseController extends Controller
                     p.bitDetalle
                 FROM PermisosPerfil p
                 JOIN Modulo m ON m.id = p.idModulo
-                WHERE p.idPerfil = ? AND m.strNombreModulo = ?
+                WHERE p.idPerfil = ? AND LOWER(TRIM(m.strNombreModulo)) = LOWER(TRIM(?))
                 LIMIT 1";
 
         $query = $db->query($sql, [$idPerfil, $nombreModulo]);

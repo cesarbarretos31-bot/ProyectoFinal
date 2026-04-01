@@ -3,6 +3,7 @@
         <h4 class="fw-bold mb-0"><i class="bi bi-shield-lock-fill text-primary me-2"></i> Matriz de Permisos</h4>
         <div class="d-flex align-items-center gap-3">
             <button id="btnGuardarMatriz" class="btn btn-primary btn-sm" onclick="appPermisos.guardarMatriz()" <?= $permisos['bitEditar'] ? '' : 'disabled' ?>>Guardar Matriz de Permisos</button>
+            <span id="permisosMensaje" class="small text-success"></span>
             <?php if (!$permisos['bitEditar']): ?>
             <small class="text-muted">(Solo lectura porque no tiene permiso de editar)</small>
             <?php endif; ?>
@@ -218,6 +219,9 @@ window.appPermisos = {
     },
 
     guardarMatriz: async function() {
+        const mensaje = document.getElementById('permisosMensaje');
+        mensaje.textContent = '';
+
         if (!this.idPerfilActual) {
             alert('Seleccione primero un perfil');
             return;
@@ -228,56 +232,59 @@ window.appPermisos = {
             return;
         }
 
-        const rows = document.querySelectorAll('#permisosBody tr');
-        for (const row of rows) {
-            const idPermiso = Number(row.dataset.idpermiso);
-            const idModulo = Number(row.dataset.idmodulo);
-            if (!idModulo) continue;
+        const boton = document.getElementById('btnGuardarMatriz');
+        boton.disabled = true;
+        boton.textContent = 'Guardando...';
 
-            const bitConsulta = row.querySelector('input[onchange*="bitConsulta"]')?.checked ? 1 : 0;
-            const bitAgregar = row.querySelector('input[onchange*="bitAgregar"]')?.checked ? 1 : 0;
-            const bitEditar = row.querySelector('input[onchange*="bitEditar"]')?.checked ? 1 : 0;
-            const bitEliminar = row.querySelector('input[onchange*="bitEliminar"]')?.checked ? 1 : 0;
-            const bitDetalle = row.querySelector('input[onchange*="bitDetalle"]')?.checked ? 1 : 0;
+        try {
+            const rows = document.querySelectorAll('#permisosBody tr');
+            for (const row of rows) {
+                const idPermiso = Number(row.dataset.idpermiso);
+                const idModulo = Number(row.dataset.idmodulo);
+                if (!idModulo) continue;
 
-            if (idPermiso > 0) {
-                const payload = new URLSearchParams();
-                payload.append('id', idPermiso);
-                payload.append('campo', 'bitConsulta');
-                payload.append('valor', bitConsulta);
-                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+                const bitConsulta = row.querySelector('input[onchange*="bitConsulta"]')?.checked ? 1 : 0;
+                const bitAgregar = row.querySelector('input[onchange*="bitAgregar"]')?.checked ? 1 : 0;
+                const bitEditar = row.querySelector('input[onchange*="bitEditar"]')?.checked ? 1 : 0;
+                const bitEliminar = row.querySelector('input[onchange*="bitEliminar"]')?.checked ? 1 : 0;
+                const bitDetalle = row.querySelector('input[onchange*="bitDetalle"]')?.checked ? 1 : 0;
 
-                payload.set('campo', 'bitAgregar');
-                payload.set('valor', bitAgregar);
-                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+                if (idPermiso > 0) {
+                    const campos = { bitConsulta, bitAgregar, bitEditar, bitEliminar, bitDetalle };
+                    for (const [campo, valor] of Object.entries(campos)) {
+                        const payload = new URLSearchParams();
+                        payload.append('id', idPermiso);
+                        payload.append('campo', campo);
+                        payload.append('valor', valor);
+                        const resp = await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
+                        if (!resp.ok) throw new Error('Error actualizando permiso');
+                    }
+                } else {
+                    const payload = new URLSearchParams();
+                    payload.append('idPerfil', this.idPerfilActual);
+                    payload.append('idModulo', idModulo);
+                    payload.append('bitConsulta', bitConsulta);
+                    payload.append('bitAgregar', bitAgregar);
+                    payload.append('bitEditar', bitEditar);
+                    payload.append('bitEliminar', bitEliminar);
+                    payload.append('bitDetalle', bitDetalle);
 
-                payload.set('campo', 'bitEditar');
-                payload.set('valor', bitEditar);
-                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
-
-                payload.set('campo', 'bitEliminar');
-                payload.set('valor', bitEliminar);
-                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
-
-                payload.set('campo', 'bitDetalle');
-                payload.set('valor', bitDetalle);
-                await fetch('<?= base_url('permisosperfil/actualizar') ?>', { method: 'POST', body: payload });
-            } else {
-                const payload = new URLSearchParams();
-                payload.append('idPerfil', this.idPerfilActual);
-                payload.append('idModulo', idModulo);
-                payload.append('bitConsulta', bitConsulta);
-                payload.append('bitAgregar', bitAgregar);
-                payload.append('bitEditar', bitEditar);
-                payload.append('bitEliminar', bitEliminar);
-                payload.append('bitDetalle', bitDetalle);
-
-                await fetch('<?= base_url('permisosperfil/guardar') ?>', { method: 'POST', body: payload });
+                    const resp = await fetch('<?= base_url('permisosperfil/guardar') ?>', { method: 'POST', body: payload });
+                    if (!resp.ok) throw new Error('Error guardando permiso');
+                }
             }
-        }
 
-        alert('Matriz de permisos guardada correctamente.');
-        this.cargar();
+            mensaje.textContent = 'Matriz guardada correctamente.';
+            mensaje.className = 'small text-success';
+            this.cargar();
+        } catch (err) {
+            mensaje.textContent = 'Error guardando matriz: ' + err.message;
+            mensaje.className = 'small text-danger';
+            console.error(err);
+        } finally {
+            boton.disabled = false;
+            boton.textContent = 'Guardar Matriz de Permisos';
+        }
     }
 };
 
