@@ -15,16 +15,36 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
         .wrapper-container { display: flex; min-height: 100vh; }
-        #sidebar { min-width: 250px; max-width: 250px; background: #2c3e50; color: white; transition: all 0.3s; display: flex; flex-direction: column; }
-        #sidebar .nav-link { color: rgba(255,255,255,0.7); border-radius: 5px; margin: 2px 10px; cursor: pointer; transition: 0.2s; padding: 10px 15px; }
+        #sidebar { min-width: 250px; max-width: 250px; background: #2c3e50; color: white; transition: transform 0.3s ease, width 0.3s ease; display: flex; flex-direction: column; }
+        #sidebar .nav-link { color: rgba(255,255,255,0.85); border-radius: 5px; margin: 4px 10px; cursor: pointer; transition: background 0.2s, color 0.2s; padding: 10px 15px; }
         #sidebar .nav-link:hover, #sidebar .nav-link.active { background: #34495e; color: white; }
         .nav-small-cap { color: #8e9aaf; font-size: 0.75rem; letter-spacing: 1px; font-weight: bold; margin-top: 20px; padding-left: 15px; }
         .main-content { flex-grow: 1; display: flex; flex-direction: column; width: calc(100% - 250px); }
         .top-navbar { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.08); z-index: 10; }
         .user-img { object-fit: cover; border: 2px solid #3498db; }
         #mainWrapper { flex-grow: 1; overflow-y: auto; }
+
+        @media (max-width: 991.98px) {
+            .wrapper-container { flex-direction: column; }
+            #sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 250px; max-width: 250px; transform: translateX(-100%); z-index: 1050; box-shadow: 2px 0 14px rgba(0,0,0,0.16); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            .main-content { width: 100%; }
+            .top-navbar { position: sticky; top: 0; z-index: 1040; }
+            .sidebar-toggler { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 0.65rem; }
+            #sidebar .nav-link { margin: 4px 8px; }
+            #mainWrapper { padding-top: 1rem; }
+            .sidebar-backdrop { display: none; }
+            body.sidebar-open .sidebar-backdrop { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 1045; }
+        }
+
+        @media (max-width: 575.98px) {
+            .top-navbar .breadcrumb { font-size: 0.9rem; }
+            .user-img { width: 36px; height: 36px; }
+            .top-navbar .ms-auto { gap: 0.5rem; }
+            .top-navbar .breadcrumb { margin-bottom: 0.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -52,6 +72,9 @@
     <div class="main-content">
         <nav class="navbar navbar-expand-lg top-navbar px-4 py-3">
             <div class="container-fluid px-0">
+                <button class="btn btn-outline-secondary d-lg-none sidebar-toggler me-3" type="button" onclick="toggleSidebar()" aria-label="Abrir menú">
+                    <i class="bi bi-list"></i>
+                </button>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0" id="breadcrumbArea">
                         <li class="breadcrumb-item"><a href="javascript:void(0)" onclick="location.reload()" class="text-decoration-none">Inicio</a></li>
@@ -77,6 +100,7 @@
         </div>
     </div>
 </div>
+<div class="sidebar-backdrop" onclick="closeSidebar()"></div>
 
 <script>
     const PERFIL_ID = "<?= session()->get('idPerfil') ?>";
@@ -88,6 +112,14 @@
             window.location.href = '<?= base_url("login") ?>';
         }
     });
+
+    function toggleSidebar() {
+        document.body.classList.toggle('sidebar-open');
+    }
+
+    function closeSidebar() {
+        document.body.classList.remove('sidebar-open');
+    }
 
     async function renderizarMenuCompleto() {
         const sidebar = document.getElementById('sidebar-dinamico');
@@ -122,6 +154,7 @@
         // 1. Resaltar el menú seleccionado
         document.querySelectorAll('.module-link').forEach(el => el.classList.remove('active'));
         if(elementoMenu) elementoMenu.classList.add('active');
+        if (window.innerWidth < 992) closeSidebar();
 
         // 2. Actualizar el Breadcrumb
         breadcrumbArea.innerHTML = `
