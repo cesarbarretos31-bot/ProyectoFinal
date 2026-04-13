@@ -123,28 +123,63 @@
 
     async function renderizarMenuCompleto() {
         const sidebar = document.getElementById('sidebar-dinamico');
+        const nombresDeGrupo = {
+            1: 'Seguridad',
+            2: 'Principal 1',
+            3: 'Principal 2'
+        };
+
         try {
             const response = await fetch(`<?= base_url('menu/obtenerMenu') ?>?idPerfil=${PERFIL_ID}`);
             const datos = await response.json();
-            sidebar.innerHTML = ''; 
+            sidebar.innerHTML = '';
 
-            datos.forEach(p => {
+            const grupos = datos.reduce((acc, item) => {
+                const grupoId = item.idMenu || 0;
+                if (!acc[grupoId]) acc[grupoId] = [];
+                acc[grupoId].push(item);
+                return acc;
+            }, {});
+
+            Object.keys(grupos).forEach(grupoId => {
+                const items = grupos[grupoId];
+                const labelGrupo = nombresDeGrupo[grupoId] || `Grupo ${grupoId}`;
+                const grupoKey = `menuGroup${grupoId}`;
+
                 sidebar.innerHTML += `
                     <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center module-link" href="javascript:void(0)" 
-                           onclick="cargarModulo('${p.strNombreModulo}', this)">
-                            <i class="bi bi-circle-fill me-2" style="font-size: 8px;"></i>
-                            <span>${p.strNombreModulo}</span>
+                        <a class="nav-link d-flex justify-content-between align-items-center collapsed" 
+                           data-bs-toggle="collapse" href="#${grupoKey}" role="button" aria-expanded="false" aria-controls="${grupoKey}">
+                            <span><i class="bi bi-folder2-open me-2"></i>${labelGrupo}</span>
+                            <i class="bi bi-chevron-down"></i>
                         </a>
+                        <div class="collapse" id="${grupoKey}">
+                            <ul class="nav flex-column ms-3 mb-0">
+                                ${items.map(item => `
+                                    <li class="nav-item">
+                                        <a class="nav-link d-flex align-items-center submenu-link" href="javascript:void(0)"
+                                           onclick="cargarModulo('${item.strNombreModulo}', this)">
+                                            <i class="bi bi-dot me-2"></i>
+                                            <span>${item.strNombreModulo}</span>
+                                        </a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
                     </li>`;
             });
 
-            // Si hay al menos un módulo, cargamos el primero automáticamente.
-            const primerLink = sidebar.querySelector('.module-link');
-            if (primerLink) {
-                primerLink.click();
+            // Abrir el primer grupo y seleccionar el primer submenú
+            const primerGrupo = sidebar.querySelector('.collapse');
+            if (primerGrupo) {
+                const bsCollapse = new bootstrap.Collapse(primerGrupo, { toggle: false });
+                bsCollapse.show();
+                const primerLink = primerGrupo.querySelector('.submenu-link');
+                if (primerLink) primerLink.click();
             }
-        } catch (error) { console.error("Error al cargar menú:", error); }
+        } catch (error) {
+            console.error("Error al cargar menú:", error);
+        }
     }
 
     async function cargarModulo(nombreModulo, elementoMenu) {
@@ -152,8 +187,8 @@
         const breadcrumbArea = document.getElementById('breadcrumbArea');
         
         // 1. Resaltar el menú seleccionado
-        document.querySelectorAll('.module-link').forEach(el => el.classList.remove('active'));
-        if(elementoMenu) elementoMenu.classList.add('active');
+        document.querySelectorAll('.module-link, .submenu-link').forEach(el => el.classList.remove('active'));
+        if (elementoMenu) elementoMenu.classList.add('active');
         if (window.innerWidth < 992) closeSidebar();
 
         // 2. Actualizar el Breadcrumb
