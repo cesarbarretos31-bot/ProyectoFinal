@@ -153,8 +153,24 @@ window.appPermisos = {
         const cont = document.getElementById('permisosPaginacion');
         cont.innerHTML = '';
 
+        if (this.paginaActual > 1) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPermisos.paginaActual=1; appPermisos.mostrarPagina();">Primero</a></li>`;
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPermisos.paginaActual=${this.paginaActual - 1}; appPermisos.mostrarPagina();">Anterior</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Primero</span></li>`;
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Anterior</span></li>`;
+        }
+
         for (let i = 1; i <= totalPag; i++) {
             cont.innerHTML += `<li class="page-item ${i === this.paginaActual ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="appPermisos.paginaActual=${i}; appPermisos.mostrarPagina();">${i}</a></li>`;
+        }
+
+        if (this.paginaActual < totalPag) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPermisos.paginaActual=${this.paginaActual + 1}; appPermisos.mostrarPagina();">Siguiente</a></li>`;
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPermisos.paginaActual=${this.totalPaginas}; appPermisos.mostrarPagina();">Último</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Siguiente</span></li>`;
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Último</span></li>`;
         }
     },
 

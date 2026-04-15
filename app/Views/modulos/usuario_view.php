@@ -219,8 +219,10 @@ window.appUsuario = {
 
         const current = pager.current;
         if (current > 1) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=1; appUsuario.listar();">Primero</a></li>`;
             cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=${current-1}; appUsuario.listar();">Anterior</a></li>`;
         } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Primero</span></li>`;
             cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Anterior</span></li>`;
         }
 
@@ -230,8 +232,10 @@ window.appUsuario = {
 
         if (current < pager.total) {
             cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=${current+1}; appUsuario.listar();">Siguiente</a></li>`;
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appUsuario.paginaActual=${pager.total}; appUsuario.listar();">Último</a></li>`;
         } else {
             cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Siguiente</span></li>`;
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Último</span></li>`;
         }
     },
 

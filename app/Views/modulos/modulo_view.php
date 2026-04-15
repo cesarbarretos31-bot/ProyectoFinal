@@ -167,8 +167,10 @@ window.appModulo = {
         if (!pager || pager.total <= 1) return;
 
         if (pager.current > 1) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=1; appModulo.listar();">Primero</a></li>`;
             cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=${pager.current - 1}; appModulo.listar();">Anterior</a></li>`;
         } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Primero</span></li>`;
             cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Anterior</span></li>`;
         }
 
@@ -178,8 +180,10 @@ window.appModulo = {
 
         if (pager.current < pager.total) {
             cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=${pager.current + 1}; appModulo.listar();">Siguiente</a></li>`;
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appModulo.paginaActual=${pager.total}; appModulo.listar();">Último</a></li>`;
         } else {
             cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Siguiente</span></li>`;
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Último</span></li>`;
         }
     },
 

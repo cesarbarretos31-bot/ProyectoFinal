@@ -232,12 +232,28 @@ window.appPerfil = {
         cont.innerHTML = '';
         if(!pager || pager.total <= 1) return; // No mostrar si solo hay 1 página
         
+        if (pager.current > 1) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPerfil.paginaActual=1; appPerfil.listar();">Primero</a></li>`;
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPerfil.paginaActual=${pager.current - 1}; appPerfil.listar();">Anterior</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Primero</span></li>`;
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Anterior</span></li>`;
+        }
+
         for (let i = 1; i <= pager.total; i++) {
             cont.innerHTML += `
                 <li class="page-item ${i === pager.current ? 'active' : ''}">
                     <a class="page-link" href="javascript:void(0)" onclick="appPerfil.paginaActual=${i}; appPerfil.listar();">${i}</a>
                 </li>
             `;
+        }
+
+        if (pager.current < pager.total) {
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPerfil.paginaActual=${pager.current + 1}; appPerfil.listar();">Siguiente</a></li>`;
+            cont.innerHTML += `<li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="appPerfil.paginaActual=${pager.total}; appPerfil.listar();">Último</a></li>`;
+        } else {
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Siguiente</span></li>`;
+            cont.innerHTML += `<li class="page-item disabled"><span class="page-link">Último</span></li>`;
         }
     }
 };
