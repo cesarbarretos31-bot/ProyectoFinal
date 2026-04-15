@@ -59,9 +59,11 @@
                                 <h5 class="mb-0">Contenido</h5>
                                 <div class="d-flex gap-2">
                                     <input id="txtBuscarPrincipal" type="search" class="form-control form-control-sm" style="max-width: 260px;" placeholder="Buscar..." maxlength="100" />
-                                    <button id="btnNuevoPrincipal" class="btn btn-sm btn-primary" <?= $permisos['bitAgregar'] ? '' : 'disabled' ?>>
+                                    <?php if ($permisos['bitAgregar']): ?>
+                                    <button id="btnNuevoPrincipal" class="btn btn-sm btn-primary">
                                         <i class="bi bi-plus-circle"></i> Nuevo
                                     </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
@@ -77,6 +79,9 @@
                                     <tbody></tbody>
                                 </table>
                             </div>
+                            <nav aria-label="Paginación principal" class="mt-3">
+                                <ul class="pagination pagination-sm justify-content-center mb-0" id="paginacionPrincipal"></ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -110,24 +115,66 @@
 
     const filas = datosDefecto[modulo] || [];
     const tbody = document.querySelector('#tablaPrincipal tbody');
+    const paginacion = document.getElementById('paginacionPrincipal');
+    const pageSize = 1;
+    let paginaActual = 1;
+
+    const renderPaginacion = (totalPaginas) => {
+        paginacion.innerHTML = '';
+        if (totalPaginas <= 1) return;
+
+        const crearItem = (label, disabled, targetPage) => {
+            return `<li class="page-item ${disabled ? 'disabled' : ''}"><a class="page-link ${disabled ? 'disabled' : ''}" href="#" data-page="${targetPage}">${label}</a></li>`;
+        };
+
+        paginacion.innerHTML += crearItem('Primero', paginaActual === 1, 1);
+        paginacion.innerHTML += crearItem('Anterior', paginaActual === 1, Math.max(1, paginaActual - 1));
+
+        for (let i = 1; i <= totalPaginas; i++) {
+            paginacion.innerHTML += `
+                <li class="page-item ${i === paginaActual ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>`;
+        }
+
+        paginacion.innerHTML += crearItem('Siguiente', paginaActual === totalPaginas, Math.min(totalPaginas, paginaActual + 1));
+        paginacion.innerHTML += crearItem('Último', paginaActual === totalPaginas, totalPaginas);
+
+        paginacion.querySelectorAll('a[data-page]').forEach(link => {
+            if (link.classList.contains('disabled')) return;
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                paginaActual = Number(link.dataset.page);
+                renderFilas();
+            });
+        });
+    };
 
     const renderFilas = () => {
         const filtro = document.querySelector('#txtBuscarPrincipal').value.toLowerCase();
         const filtrado = filas.filter(r => r.nombre.toLowerCase().includes(filtro) || r.detalle.toLowerCase().includes(filtro));
+        const totalPaginas = Math.max(1, Math.ceil(filtrado.length / pageSize));
+
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
 
         tbody.innerHTML = '';
 
         if (!permisos.bitConsulta) {
+            paginacion.innerHTML = '';
             tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">No tienes permiso de consulta.</td></tr>';
             return;
         }
 
         if (filtrado.length === 0) {
+            paginacion.innerHTML = '';
             tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Sin registros.</td></tr>';
             return;
         }
 
-        filtrado.forEach(item => {
+        const inicio = (paginaActual - 1) * pageSize;
+        const paginadas = filtrado.slice(inicio, inicio + pageSize);
+
+        paginadas.forEach(item => {
             const acciones = [];
             if (permisos.bitEditar) acciones.push('<button class="btn btn-sm btn-outline-warning me-1">Editar</button>');
             if (permisos.bitEliminar) acciones.push('<button class="btn btn-sm btn-outline-danger">Eliminar</button>');
@@ -140,13 +187,21 @@
                 </tr>
             `);
         });
+
+        renderPaginacion(totalPaginas);
     };
 
-    document.querySelector('#txtBuscarPrincipal').addEventListener('input', renderFilas);
-    document.querySelector('#btnNuevoPrincipal').addEventListener('click', () => {
-        if (!permisos.bitAgregar) return;
-        alert('Crear nuevo registro [funcionalidad de muestra]');
+    document.querySelector('#txtBuscarPrincipal').addEventListener('input', () => {
+        paginaActual = 1;
+        renderFilas();
     });
+
+    if (document.querySelector('#btnNuevoPrincipal')) {
+        document.querySelector('#btnNuevoPrincipal').addEventListener('click', () => {
+            if (!permisos.bitAgregar) return;
+            alert('Crear nuevo registro [funcionalidad de muestra]');
+        });
+    }
 
     renderFilas();
 })();
