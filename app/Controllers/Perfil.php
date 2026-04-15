@@ -42,17 +42,21 @@ class Perfil extends BaseController
         $model = new PerfilModel();
 
         $id = $this->request->getPost('id');
-        $data = [
-            'strNombrePerfil' => trim($this->request->getPost('strNombrePerfil')),
-            'bitAdministrador' => $this->request->getPost('bitAdministrador') ? 1 : 0,
-        ];
-
-        if (!$this->validate([
-            'strNombrePerfil' => 'required|alpha_numeric_space|min_length[3]|max_length[100]',
-            'bitAdministrador' => 'required|in_list[0,1]'
-        ])) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $strNombrePerfil = trim($this->request->getPost('strNombrePerfil'));
+        $bitAdmin = $this->request->getPost('bitAdministrador');
+        
+        // Asegurar que bitAdministrador sea 0 o 1
+        $bitAdministrador = ($bitAdmin == '1' || $bitAdmin == 1) ? 1 : 0;
+        
+        // Validar nombre
+        if (!$strNombrePerfil || strlen($strNombrePerfil) < 3 || strlen($strNombrePerfil) > 100) {
+            return $this->failValidationErrors(['strNombrePerfil' => 'El nombre debe tener entre 3 y 100 caracteres']);
         }
+
+        $data = [
+            'strNombrePerfil' => $strNombrePerfil,
+            'bitAdministrador' => $bitAdministrador,
+        ];
 
         if ($id) {
             if (!$model->update($id, $data)) {

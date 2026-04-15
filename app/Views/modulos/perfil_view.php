@@ -148,6 +148,10 @@ window.appPerfil = {
         const id = document.getElementById('perfil_id').value;
         if (id) formData.append('id', id);
 
+        // Asegurar que bitAdministrador siempre sea 0 o 1
+        const isAdmin = document.getElementById('bitAdministrador').checked ? 1 : 0;
+        formData.set('bitAdministrador', isAdmin);
+
         try {
             const resp = await fetch('<?= base_url("perfil/guardar") ?>', {
                 method: 'POST',
@@ -173,9 +177,13 @@ window.appPerfil = {
         
         try {
             const csrf = appPerfil.getCsrfToken();
-            const resp = await fetch(`<?= base_url('perfil') ?>/${id}`, { 
-                method: 'DELETE',
-                headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {}
+            const formData = new FormData();
+            if (csrf) formData.append('csrf_test_name', csrf);
+            
+            const resp = await fetch(`<?= base_url('perfil/eliminar') ?>/${id}`, { 
+                method: 'POST',
+                headers: csrf ? { 'X-CSRF-TOKEN': csrf } : {},
+                body: formData
             });
             const res = await resp.json();
             if(resp.ok) this.listar();

@@ -66,7 +66,7 @@ class Auth extends BaseController
             'idUsuario'    => $user->id,
             'nombre'       => $user->strNombreUsuario,
             'idPerfil'     => $user->idPerfil,
-            'foto'         => base_url('uploads/' . ($user->strImagen ?? 'default.png')),
+            'foto'         => base_url('uploads/' . ($user->strImagen ?? 'default.jpg')),
             'isLoggedIn'   => true
         ];
         $session->set($ses_data);
