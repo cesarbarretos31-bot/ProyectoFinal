@@ -45,6 +45,23 @@ abstract class BaseController extends Controller
 
     /**
      * Obtiene los permisos del usuario actual para un módulo específico
+     * 
+     * LÓGICA DE PERMISOS:
+     * - bitConsulta: Permite ver/consultar registros del módulo
+     * - bitAgregar: Permite crear nuevos registros
+     * - bitEditar: Permite modificar registros existentes
+     * - bitEliminar: Permite eliminar registros
+     * - bitDetalle: Permite ver información detallada/completa de un registro (cuando está visible)
+     * 
+     * REGLA IMPORTANTE:
+     * Si el perfil está marcado como Administrador (bitAdministrador = 1), 
+     * se otorgan automáticamente TODOS los permisos sin necesidad de configurarlos en la matriz.
+     * 
+     * FLUJO:
+     * 1. Verificar si el usuario tiene sesión válida
+     * 2. Si es Administrador → retornar todos los permisos en 1
+     * 3. Si NO es Administrador → consultar la matriz de permisos específica
+     * 4. Si no hay permisos configurados → retornar todos los permisos en 0
      */
     protected function getPermisosModulo($nombreModulo)
     {
@@ -62,6 +79,21 @@ abstract class BaseController extends Controller
         }
 
         $db = \Config\Database::connect();
+        
+        // PRIMERO: Verificar si es administrador
+        $perfil = $db->table('Perfil')->select('bitAdministrador')->where('id', $idPerfil)->get()->getRow();
+        if ($perfil && intval($perfil->bitAdministrador) === 1) {
+            // Administrador → todos los permisos automáticamente
+            return [
+                'bitConsulta' => 1,
+                'bitAgregar' => 1,
+                'bitEditar' => 1,
+                'bitEliminar' => 1,
+                'bitDetalle' => 1
+            ];
+        }
+
+        // SEGUNDO: Si NO es administrador, consultar la matriz de permisos
         $sql = "SELECT
                     p.bitConsulta,
                     p.bitAgregar,
@@ -72,18 +104,6 @@ abstract class BaseController extends Controller
                 JOIN Modulo m ON m.id = p.idModulo
                 WHERE p.idPerfil = ? AND LOWER(TRIM(m.strNombreModulo)) = LOWER(TRIM(?))
                 LIMIT 1";
-
-        // Si el perfil es administrador, otorgar todos los permisos automáticamente
-        $perfil = $db->table('Perfil')->select('bitAdministrador')->where('id', $idPerfil)->get()->getRow();
-        if ($perfil && intval($perfil->bitAdministrador) === 1) {
-            return [
-                'bitConsulta' => 1,
-                'bitAgregar' => 1,
-                'bitEditar' => 1,
-                'bitEliminar' => 1,
-                'bitDetalle' => 1
-            ];
-        }
 
         $query = $db->query($sql, [$idPerfil, $nombreModulo]);
         $permiso = $query->getRow();
@@ -98,6 +118,7 @@ abstract class BaseController extends Controller
             ];
         }
 
+        // TERCERO: Sin permisos configurados → denegar acceso
         return [
             'bitConsulta' => 0,
             'bitAgregar' => 0,

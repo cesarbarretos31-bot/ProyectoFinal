@@ -26,7 +26,6 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-muted small">
                     <tr>
-                        <th>ID</th>
                         <th>Nombre del Perfil</th>
                         <th>Administrador</th>
                         <th class="text-end">Acciones</th>
@@ -113,7 +112,6 @@ window.appPerfil = {
                 res.data.forEach(p => {
                     tbody.innerHTML += `
                         <tr>
-                            <td>${p.id}</td>
                             <td class="fw-bold">${p.strNombrePerfil}</td>
                             <td>${p.bitAdministrador == 1 ? '<span class="badge bg-success-subtle text-success border">Sí</span>' : '<span class="badge bg-light text-muted border">No</span>'}</td>
                             <td class="text-end">
@@ -128,7 +126,7 @@ window.appPerfil = {
                     `;
                 });
             } else {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No se encontraron registros.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No se encontraron registros.</td></tr>`;
             }
 
             this.actualizarPaginacion(res.pager);

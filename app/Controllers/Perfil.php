@@ -65,11 +65,51 @@ class Perfil extends BaseController
             return $this->respond(['status' => 'success', 'message' => 'Perfil actualizado correctamente']);
         }
 
-        if (!$model->insert($data)) {
+        // Crear nuevo perfil
+        $newProfileId = $model->insert($data);
+        if (!$newProfileId) {
             return $this->failServerError('No se pudo crear el perfil.');
         }
 
+        // Si el perfil es Administrador, asignar automáticamente TODOS los permisos
+        if ($bitAdministrador === 1) {
+            $this->asignarPermisosAdministrador($newProfileId);
+        }
+
         return $this->respondCreated(['status' => 'success', 'message' => 'Perfil creado correctamente']);
+    }
+
+    /**
+     * Asigna automáticamente TODOS los permisos a un perfil administrador
+     * 
+     * Cuando se crea un nuevo perfil de Administrador, se le otorgan automáticamente:
+     * - bitConsulta = 1 (puede consultar)
+     * - bitAgregar = 1 (puede agregar)
+     * - bitEditar = 1 (puede editar)
+     * - bitEliminar = 1 (puede eliminar)
+     * - bitDetalle = 1 (puede ver detalles)
+     * 
+     * Esto se hace para TODOS los módulos disponibles en el sistema
+     */
+    private function asignarPermisosAdministrador($idPerfil)
+    {
+        $db = \Config\Database::connect();
+        
+        // Obtener todos los módulos disponibles
+        $modulos = $db->table('Modulo')->select('id')->get()->getResultArray();
+        
+        // Asignar todos los permisos para cada módulo
+        foreach ($modulos as $modulo) {
+            $db->table('PermisosPerfil')->insert([
+                'idPerfil' => $idPerfil,
+                'idModulo' => $modulo['id'],
+                'bitConsulta' => 1,
+                'bitAgregar' => 1,
+                'bitEditar' => 1,
+                'bitEliminar' => 1,
+                'bitDetalle' => 1,
+            ]);
+        }
     }
 
     public function eliminar($id = null)

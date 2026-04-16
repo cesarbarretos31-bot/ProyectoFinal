@@ -14,7 +14,6 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-muted small">
                     <tr>
-                        <th>ID</th>
                         <th>Usuario</th>
                         <th>Perfil</th>
                         <th>Estado</th>
@@ -123,13 +122,13 @@ window.appUsuario = {
         tbody.innerHTML = '';
 
         if (usuarios.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay usuarios.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay usuarios.</td></tr>';
             document.getElementById('paginacion-usuarios').innerHTML = '';
             return;
         }
 
         usuarios.forEach(u => {
-            tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.strNombreUsuario}</td><td>${u.perfil||'--'}</td><td>${u.idEstado==1 ? 'Activo' : 'Inactivo'}</td><td class="text-end">
+            tbody.innerHTML += `<tr><td>${u.strNombreUsuario}</td><td>${u.perfil||'--'}</td><td>${u.idEstado==1 ? 'Activo' : 'Inactivo'}</td><td class="text-end">
             <?php if ($permisos['bitEditar']): ?>
             <button class="btn btn-sm btn-warning me-1" onclick="appUsuario.editar(${u.id})">Editar</button>
             <?php endif; ?>

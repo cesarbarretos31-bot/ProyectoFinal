@@ -14,12 +14,28 @@ class PermisosPerfil extends BaseController {
 
     public function mostrar($idPerfil) {
         $db = \Config\Database::connect();
+        
+        // Obtener info del perfil para validar si es administrador
+        $perfil = $db->table('Perfil')->where('id', $idPerfil)->get()->getRow();
+        
         $builder = $db->table('Modulo m')
             ->select('m.id as idModulo, m.strNombreModulo, IFNULL(p.id, 0) as idPermiso, IFNULL(p.bitConsulta, 0) as bitConsulta, IFNULL(p.bitAgregar, 0) as bitAgregar, IFNULL(p.bitEditar, 0) as bitEditar, IFNULL(p.bitEliminar, 0) as bitEliminar, IFNULL(p.bitDetalle, 0) as bitDetalle')
             ->join('PermisosPerfil p', 'p.idModulo = m.id AND p.idPerfil = '.$idPerfil, 'left')
             ->orderBy('m.id', 'ASC');
 
         $data = $builder->get()->getResultArray();
+        
+        // Si es Administrador, mostrar TODOS los permisos en 1
+        if ($perfil && intval($perfil->bitAdministrador) === 1) {
+            foreach ($data as &$modulo) {
+                $modulo['bitConsulta'] = 1;
+                $modulo['bitAgregar'] = 1;
+                $modulo['bitEditar'] = 1;
+                $modulo['bitEliminar'] = 1;
+                $modulo['bitDetalle'] = 1;
+            }
+        }
+        
         return $this->respond($data);
     }
 
@@ -74,9 +90,18 @@ class PermisosPerfil extends BaseController {
             return $this->failValidationErrors('Perfil inválido');
         }
 
-        $permisos = $input['permisos'];
-
+        // VALIDACIÓN IMPORTANTE: No permitir editar permisos de Administrador
+        // Los administradores tienen TODOS los permisos automáticamente
         $db = \Config\Database::connect();
+        $perfil = $db->table('Perfil')->where('id', $idPerfil)->get()->getRow();
+        
+        if ($perfil && intval($perfil->bitAdministrador) === 1) {
+            return $this->fail('No se pueden editar permisos de un perfil Administrador. '
+                             . 'Los administradores tienen automáticamente TODOS los permisos (Consultar, Agregar, Editar, Eliminar, Detalle).',
+                             403);
+        }
+
+        $permisos = $input['permisos'];
         $db->transStart();
 
         foreach ($permisos as $fila) {
