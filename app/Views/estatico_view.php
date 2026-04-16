@@ -72,7 +72,7 @@
                                     <thead class="table-light">
                                         <tr>
                                             <th>Nombre</th>
-                                            <th>Detalle</th>
+                                            <th id="encabezadoDetalle" style="display: <?= $permisos['bitDetalle'] ? 'table-cell' : 'none' ?>;">Detalle</th>
                                             <th class="text-end">Acciones</th>
                                         </tr>
                                     </thead>
@@ -152,7 +152,11 @@
 
     const renderFilas = () => {
         const filtro = document.querySelector('#txtBuscarPrincipal').value.toLowerCase();
-        const filtrado = filas.filter(r => r.nombre.toLowerCase().includes(filtro) || r.detalle.toLowerCase().includes(filtro));
+        // Solo buscar en detalle si tiene permiso de verlo
+        const filtrado = filas.filter(r => 
+            r.nombre.toLowerCase().includes(filtro) || 
+            (permisos.bitDetalle && r.detalle.toLowerCase().includes(filtro))
+        );
         const totalPaginas = Math.max(1, Math.ceil(filtrado.length / pageSize));
 
         if (paginaActual > totalPaginas) paginaActual = totalPaginas;
@@ -161,13 +165,15 @@
 
         if (!permisos.bitConsulta) {
             paginacion.innerHTML = '';
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">No tienes permiso de consulta.</td></tr>';
+            const colspanSinDetalle = permisos.bitDetalle ? 3 : 2;
+            tbody.innerHTML = `<tr><td colspan="${colspanSinDetalle}" class="text-center text-danger">No tienes permiso de consulta.</td></tr>`;
             return;
         }
 
         if (filtrado.length === 0) {
             paginacion.innerHTML = '';
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Sin registros.</td></tr>';
+            const colspanSinDetalle = permisos.bitDetalle ? 3 : 2;
+            tbody.innerHTML = `<tr><td colspan="${colspanSinDetalle}" class="text-center text-muted">Sin registros.</td></tr>`;
             return;
         }
 
@@ -179,13 +185,14 @@
             if (permisos.bitEditar) acciones.push('<button class="btn btn-sm btn-outline-warning me-1">Editar</button>');
             if (permisos.bitEliminar) acciones.push('<button class="btn btn-sm btn-outline-danger">Eliminar</button>');
 
-            tbody.insertAdjacentHTML('beforeend', `
-                <tr>
-                    <td>${item.nombre}</td>
-                    <td>${item.detalle}</td>
-                    <td class="text-end">${acciones.join(' ')}</td>
-                </tr>
-            `);
+            // Si tiene permiso de Detalle, mostrar la columna detalle
+            let filaHTML = `<tr><td>${item.nombre}</td>`;
+            if (permisos.bitDetalle) {
+                filaHTML += `<td>${item.detalle}</td>`;
+            }
+            filaHTML += `<td class="text-end">${acciones.join(' ')}</td></tr>`;
+
+            tbody.insertAdjacentHTML('beforeend', filaHTML);
         });
 
         renderPaginacion(totalPaginas);

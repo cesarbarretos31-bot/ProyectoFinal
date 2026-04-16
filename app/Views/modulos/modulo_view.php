@@ -14,13 +14,12 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-muted small">
                     <tr>
-                        <th>ID</th>
                         <th>Nombre del Módulo</th>
                         <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tbody-modulos" class="small">
-                    <tr><td colspan="3" class="text-center">Cargando datos...</td></tr>
+                    <tr><td colspan="2" class="text-center">Cargando datos...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -78,14 +77,14 @@ window.appModulo = {
             tbody.innerHTML = '';
 
             if (datos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No hay módulos.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">No hay módulos.</td></tr>';
                 document.getElementById('modulo-total-registros').textContent = '0 registros';
                 document.getElementById('paginacion-modulos').innerHTML = '';
                 return;
             }
 
             datos.forEach(item => {
-                tbody.innerHTML += `<tr><td>${item.id}</td><td>${item.strNombreModulo}</td><td class="text-end">
+                tbody.innerHTML += `<tr><td>${item.strNombreModulo}</td><td class="text-end">
                 <?php if ($permisos['bitEditar']): ?>
                 <button class="btn btn-sm btn-warning me-1" onclick="appModulo.editar(${item.id}, '${item.strNombreModulo}')">Editar</button>
                 <?php endif; ?>
@@ -99,7 +98,7 @@ window.appModulo = {
             this.actualizarPaginacion(res.pager);
         } catch (err) {
             console.error('Error al listar módulos', err);
-            document.getElementById('tbody-modulos').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error al cargar los datos</td></tr>';
+            document.getElementById('tbody-modulos').innerHTML = '<tr><td colspan="2" class="text-center text-danger">Error al cargar los datos</td></tr>';
         }
     },
 
